@@ -1,0 +1,40 @@
+@import 'tailwindcss';
+
+@source '../views/**/*.blade.php';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand-50: #eff6ff;
+    --color-brand-100: #dbeafe;
+    --color-brand-500: #2563eb;
+    --color-brand-600: #1d4ed8;
+    --color-brand-700: #1e40af;
+    --color-ink: #111827;
+    --color-muted: #6b7280;
+    --color-surface: #ffffff;
+    --color-soft: #f8fafc;
+    --color-line: #e5e7eb;
+    --radius-control: 0.5rem;
+    --shadow-panel: 0 18px 45px -30px rgb(15 23 42 / 0.35);
+}
+
+@layer base {
+    html {
+        color: var(--color-ink);
+        background: var(--color-soft);
+    }
+
+    body {
+        min-width: 320px;
+    }
+}
+
+@layer components {
+    .app-focus {
+        @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
+    }
+}
