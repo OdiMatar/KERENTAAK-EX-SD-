@@ -15,6 +15,14 @@
     </head>
     <body class="min-h-screen bg-soft font-sans antialiased text-ink">
         <div class="min-h-screen">
+            @if (session('status'))
+                <div class="border-b border-emerald-200 bg-emerald-50">
+                    <x-ui.container>
+                        <p class="py-3 text-sm font-medium text-emerald-800">{{ session('status') }}</p>
+                    </x-ui.container>
+                </div>
+            @endif
+
             {{ $slot }}
         </div>
     </body>
