@@ -1,21 +1,8 @@
 <x-app-layout title="Registreren">
-    <header class="border-b border-line bg-surface">
-        <x-ui.container size="narrow">
-            <div class="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-brand-600">Nieuw account</p>
-                    <h1 class="text-2xl font-semibold leading-tight text-ink sm:text-3xl">Registreren</h1>
-                </div>
-
-                <x-ui.button variant="secondary" href="{{ route('login') }}">Ik heb al een account</x-ui.button>
-            </div>
-        </x-ui.container>
-    </header>
-
     <main>
-        <x-ui.section class="py-8 sm:py-10">
+        <x-ui.section>
             <x-ui.card title="Accountgegevens" description="Vul je gegevens in. Velden worden in de browser en op de server gecontroleerd.">
-                <form method="POST" action="{{ route('register.store') }}" class="grid gap-4">
+                <form method="POST" action="{{ route('register.store') }}" class="d-grid gap-3">
                     @csrf
 
                     <x-ui.input
@@ -61,7 +48,7 @@
                         required
                     />
 
-                    <div class="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-sm-end pt-2">
                         <x-ui.button variant="secondary" href="{{ route('home') }}">Annuleren</x-ui.button>
                         <x-ui.button type="submit">Account aanmaken</x-ui.button>
                     </div>

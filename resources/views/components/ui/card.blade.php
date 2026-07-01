@@ -6,20 +6,20 @@
 
 @php
     $paddingClass = [
-        'compact' => 'p-4 sm:p-5',
-        'default' => 'p-5 sm:p-6 lg:p-7',
+        'compact' => 'p-3',
+        'default' => 'p-4',
     ][$padding];
 @endphp
 
-<div {{ $attributes->merge(['class' => 'rounded-lg border border-line bg-surface shadow-panel '.$paddingClass]) }}>
+<div {{ $attributes->merge(['class' => 'card site-card h-100 '.$paddingClass]) }}>
     @if ($title || $description)
-        <div class="mb-4">
+        <div class="mb-3">
             @if ($title)
-                <h3 class="text-lg font-semibold leading-7 text-ink">{{ $title }}</h3>
+                <h3 class="h5 fw-semibold mb-1">{{ $title }}</h3>
             @endif
 
             @if ($description)
-                <p class="mt-1 text-sm leading-6 text-muted">{{ $description }}</p>
+                <p class="small text-muted-custom mb-0">{{ $description }}</p>
             @endif
         </div>
     @endif

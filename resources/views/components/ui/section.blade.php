@@ -4,20 +4,20 @@
     'description' => null,
 ])
 
-<section {{ $attributes->merge(['class' => 'py-8 sm:py-10 lg:py-14']) }}>
+<section {{ $attributes->merge(['class' => 'py-5']) }}>
     <x-ui.container>
         @if ($eyebrow || $title || $description)
-            <div class="mb-6 max-w-3xl sm:mb-8">
+            <div class="mb-4 col-lg-8">
                 @if ($eyebrow)
-                    <p class="mb-2 text-sm font-semibold text-brand-600">{{ $eyebrow }}</p>
+                    <p class="mb-2 small fw-semibold text-brand">{{ $eyebrow }}</p>
                 @endif
 
                 @if ($title)
-                    <h2 class="text-2xl font-semibold leading-tight text-ink sm:text-3xl">{{ $title }}</h2>
+                    <h2 class="h3 fw-semibold">{{ $title }}</h2>
                 @endif
 
                 @if ($description)
-                    <p class="mt-3 text-base leading-7 text-muted">{{ $description }}</p>
+                    <p class="mt-3 text-muted-custom">{{ $description }}</p>
                 @endif
             </div>
         @endif

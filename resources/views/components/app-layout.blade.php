@@ -1,5 +1,6 @@
 @props([
     'title' => config('app.name', 'Laravel'),
+    'navVariant' => 'default',
 ])
 
 <!DOCTYPE html>
@@ -13,17 +14,48 @@
         @fonts
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="min-h-screen bg-soft font-sans antialiased text-ink">
-        <div class="min-h-screen">
+    <body class="min-vh-100 bg-soft">
+        <div class="min-vh-100 d-flex flex-column">
             @if (session('status'))
-                <div class="flash-message border-b border-emerald-200 bg-emerald-50">
+                <div class="alert alert-success alert-dismissible auto-dismiss rounded-0 border-0 mb-0" role="alert">
                     <x-ui.container>
-                        <p class="py-3 text-sm font-medium text-emerald-800">{{ session('status') }}</p>
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <span>{{ session('status') }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Sluiten"></button>
+                        </div>
                     </x-ui.container>
                 </div>
             @endif
 
-            {{ $slot }}
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible auto-dismiss rounded-0 border-0 mb-0" role="alert">
+                    <x-ui.container>
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <span>{{ session('error') }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Sluiten"></button>
+                        </div>
+                    </x-ui.container>
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible auto-dismiss rounded-0 border-0 mb-0" role="alert">
+                    <x-ui.container>
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <span>Controleer de ingevulde gegevens.</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Sluiten"></button>
+                        </div>
+                    </x-ui.container>
+                </div>
+            @endif
+
+            <x-site-navbar :variant="$navVariant" />
+
+            <div class="flex-grow-1">
+                {{ $slot }}
+            </div>
+
+            <x-site-footer />
         </div>
     </body>
 </html>

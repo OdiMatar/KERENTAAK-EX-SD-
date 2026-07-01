@@ -19,5 +19,8 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/profiel', function () {
+        return view('profile.show');
+    })->name('profile');
     Route::post('/uitloggen', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });

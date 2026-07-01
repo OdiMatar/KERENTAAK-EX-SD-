@@ -1,22 +1,9 @@
 <x-app-layout title="Inloggen">
-    <header class="border-b border-line bg-surface">
-        <x-ui.container size="narrow">
-            <div class="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-brand-600">Welkom terug</p>
-                    <h1 class="text-2xl font-semibold leading-tight text-ink sm:text-3xl">Inloggen</h1>
-                </div>
-
-                <x-ui.button variant="secondary" href="{{ route('register') }}">Account maken</x-ui.button>
-            </div>
-        </x-ui.container>
-    </header>
-
     <main>
-        <x-ui.section class="py-8 sm:py-10">
-            <div class="mx-auto max-w-xl">
+        <x-ui.section>
+            <div class="mx-auto" style="max-width: 36rem;">
                 <x-ui.card title="Je gegevens" description="Log in met je e-mailadres en wachtwoord.">
-                    <form method="POST" action="{{ route('login.store') }}" class="grid gap-4">
+                    <form method="POST" action="{{ route('login.store') }}" class="d-grid gap-3">
                         @csrf
 
                         <x-ui.input
@@ -39,18 +26,18 @@
                             error="{{ $errors->first('password') }}"
                         />
 
-                        <label class="flex items-center gap-3 text-sm text-muted">
+                        <label class="form-check text-muted">
                             <input
                                 type="checkbox"
                                 name="remember"
                                 value="1"
-                                class="app-focus size-4 rounded border-line text-brand-600"
+                                class="form-check-input"
                                 @checked(old('remember'))
                             >
-                            Ingelogd blijven
+                            <span class="form-check-label">Ingelogd blijven</span>
                         </label>
 
-                        <div class="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+                        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-sm-end pt-2">
                             <x-ui.button variant="secondary" href="{{ route('home') }}">Annuleren</x-ui.button>
                             <x-ui.button type="submit">Inloggen</x-ui.button>
                         </div>

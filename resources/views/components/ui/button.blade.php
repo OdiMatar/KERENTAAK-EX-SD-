@@ -6,17 +6,18 @@
 ])
 
 @php
-    $base = 'app-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-control border px-4 font-semibold transition';
+    $base = 'btn fw-semibold';
     $variants = [
-        'primary' => 'border-brand-600 bg-brand-600 text-white hover:bg-brand-700',
-        'secondary' => 'border-line bg-surface text-ink hover:bg-slate-50',
-        'ghost' => 'border-transparent bg-transparent text-ink hover:bg-slate-100',
-        'danger' => 'border-red-600 bg-red-600 text-white hover:bg-red-700',
+        'primary' => 'btn-brand',
+        'secondary' => 'btn-outline-secondary bg-white',
+        'overlay-secondary' => 'btn-overlay',
+        'ghost' => 'btn-light',
+        'danger' => 'btn-danger',
     ];
     $sizes = [
-        'sm' => 'min-h-10 px-3 text-sm',
-        'md' => 'min-h-11 px-4 text-sm',
-        'lg' => 'min-h-12 px-5 text-base',
+        'sm' => 'btn-sm',
+        'md' => '',
+        'lg' => 'btn-lg',
     ];
     $class = $base.' '.$variants[$variant].' '.$sizes[$size];
 @endphp

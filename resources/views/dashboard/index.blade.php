@@ -1,42 +1,28 @@
 <x-app-layout title="Dashboard">
-    <header class="border-b border-line bg-surface">
-        <x-ui.container>
-            <div class="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-brand-600">{{ ucfirst(auth()->user()->role) }} dashboard</p>
-                    <h1 class="text-2xl font-semibold leading-tight text-ink sm:text-3xl">Hallo, {{ auth()->user()->name }}</h1>
-                </div>
-
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <x-ui.badge variant="brand">{{ ucfirst(auth()->user()->role) }} dashboard</x-ui.badge>
-                    <x-ui.button variant="secondary" href="{{ route('home') }}">Home</x-ui.button>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <x-ui.button variant="secondary" type="submit">Uitloggen</x-ui.button>
-                    </form>
-                </div>
-            </div>
-        </x-ui.container>
-    </header>
-
     <main>
         <x-ui.section
-            eyebrow="Account"
-            title="Je bent ingelogd als {{ auth()->user()->role }}"
+            eyebrow="{{ ucfirst(auth()->user()->role) }} dashboard"
+            title="Hallo, {{ auth()->user()->name }}"
             description="Je ziet hieronder alleen de onderdelen die passen bij jouw rol binnen Kniploket Tiko."
         >
-            <div class="grid gap-4 lg:grid-cols-3">
-                <x-ui.card title="Naam" description="{{ auth()->user()->name }}">
-                    <x-ui.badge variant="success">Actief</x-ui.badge>
-                </x-ui.card>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <x-ui.card title="Naam" description="{{ auth()->user()->name }}">
+                        <x-ui.badge variant="success">Actief</x-ui.badge>
+                    </x-ui.card>
+                </div>
 
-                <x-ui.card title="E-mail" description="{{ auth()->user()->email }}">
-                    <x-ui.badge variant="brand">Geverifieerde invoer</x-ui.badge>
-                </x-ui.card>
+                <div class="col-lg-4">
+                    <x-ui.card title="E-mail" description="{{ auth()->user()->email }}">
+                        <x-ui.badge variant="brand">Geverifieerde invoer</x-ui.badge>
+                    </x-ui.card>
+                </div>
 
-                <x-ui.card title="Laatste update" description="{{ auth()->user()->updated_at->format('d-m-Y H:i') }}">
-                    <x-ui.badge variant="warning">{{ ucfirst(auth()->user()->role) }}</x-ui.badge>
-                </x-ui.card>
+                <div class="col-lg-4">
+                    <x-ui.card title="Laatste update" description="{{ auth()->user()->updated_at->format('d-m-Y H:i') }}">
+                        <x-ui.badge variant="warning">{{ ucfirst(auth()->user()->role) }}</x-ui.badge>
+                    </x-ui.card>
+                </div>
             </div>
         </x-ui.section>
 
@@ -46,11 +32,13 @@
             description="Deze modules zijn gebaseerd op de rollen uit de casus: eigenaar, medewerker en klant."
             class="pt-0"
         >
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div class="row g-4">
                 @foreach ($modules as $module)
-                    <x-ui.card title="{{ $module['title'] }}" description="{{ $module['description'] }}">
-                        <x-ui.badge variant="brand">{{ $module['badge'] }}</x-ui.badge>
-                    </x-ui.card>
+                    <div class="col-md-6 col-xl-4">
+                        <x-ui.card title="{{ $module['title'] }}" description="{{ $module['description'] }}">
+                            <x-ui.badge variant="brand">{{ $module['badge'] }}</x-ui.badge>
+                        </x-ui.card>
+                    </div>
                 @endforeach
             </div>
         </x-ui.section>
@@ -62,11 +50,13 @@
                 description="Alleen de eigenaar ziet deze managementoverzichten."
                 class="pt-0"
             >
-                <div class="grid gap-4 md:grid-cols-3">
+                <div class="row g-4">
                     @foreach ($reports as $report)
-                        <x-ui.card title="{{ $report }}">
-                            <x-ui.badge variant="warning">Rapportage</x-ui.badge>
-                        </x-ui.card>
+                        <div class="col-md-4">
+                            <x-ui.card title="{{ $report }}">
+                                <x-ui.badge variant="warning">Rapportage</x-ui.badge>
+                            </x-ui.card>
+                        </div>
                     @endforeach
                 </div>
             </x-ui.section>
@@ -80,23 +70,23 @@
                 class="pt-0"
             >
                 <x-ui.card>
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[42rem] text-left text-sm">
-                            <thead class="border-b border-line text-xs uppercase tracking-wide text-muted">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="text-uppercase small text-muted">
                                 <tr>
-                                    <th class="py-3 pr-4 font-semibold">Actie</th>
-                                    <th class="py-3 pr-4 font-semibold">Gebruiker</th>
-                                    <th class="py-3 pr-4 font-semibold">Melding</th>
-                                    <th class="py-3 font-semibold">Datum</th>
+                                    <th>Actie</th>
+                                    <th>Gebruiker</th>
+                                    <th>Melding</th>
+                                    <th>Datum</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-line">
+                            <tbody>
                                 @forelse ($latestLogs as $log)
                                     <tr>
-                                        <td class="py-3 pr-4 font-medium text-ink">{{ $log->action }}</td>
-                                        <td class="py-3 pr-4 text-muted">{{ $log->user_name ?? 'Onbekend' }}</td>
-                                        <td class="py-3 pr-4 text-muted">{{ $log->message }}</td>
-                                        <td class="py-3 text-muted">{{ \Illuminate\Support\Carbon::parse($log->created_at)->format('d-m-Y H:i') }}</td>
+                                        <td class="fw-medium">{{ $log->action }}</td>
+                                        <td class="text-muted">{{ $log->user_name ?? 'Onbekend' }}</td>
+                                        <td class="text-muted">{{ $log->message }}</td>
+                                        <td class="text-muted">{{ \Illuminate\Support\Carbon::parse($log->created_at)->format('d-m-Y H:i') }}</td>
                                     </tr>
                                 @empty
                                     <tr>

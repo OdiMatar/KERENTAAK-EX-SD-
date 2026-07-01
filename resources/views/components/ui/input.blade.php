@@ -10,9 +10,9 @@
     $id = $attributes->get('id', $name);
 @endphp
 
-<label for="{{ $id }}" class="block">
+<div>
     @if ($label)
-        <span class="mb-2 block text-sm font-medium text-ink">{{ $label }}</span>
+        <label for="{{ $id }}" class="form-label fw-medium">{{ $label }}</label>
     @endif
 
     <input
@@ -20,13 +20,13 @@
         name="{{ $name }}"
         type="{{ $type }}"
         {{ $attributes->except('id')->merge([
-            'class' => 'app-focus block min-h-11 w-full rounded-control border border-line bg-surface px-3 text-base text-ink shadow-sm placeholder:text-slate-400 sm:text-sm',
+            'class' => 'form-control',
         ]) }}
     >
 
     @if ($error)
-        <span class="mt-2 block text-sm text-red-600">{{ $error }}</span>
+        <div class="form-text text-danger">{{ $error }}</div>
     @elseif ($hint)
-        <span class="mt-2 block text-sm text-muted">{{ $hint }}</span>
+        <div class="form-text">{{ $hint }}</div>
     @endif
-</label>
+</div>
