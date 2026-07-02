@@ -15,7 +15,7 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Naam</label>
-                        <input type="text" name="name" class="form-control" value="{{ old('name', $medewerker->name) }}" required>
+                        <input type="text" name="name" class="form-control" value="{{ old('name', $medewerker->volledigeNaam()) }}" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">E-mail</label>
@@ -31,7 +31,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Telefoon</label>
-                        <input type="text" name="phone" class="form-control" value="{{ old('phone', $medewerker->phone) }}">
+                        <input type="text" name="phone" class="form-control" value="{{ old('phone', $medewerker->telefoonnummer ?? $medewerker->phone) }}">
                     </div>
 
                     <div class="col-12 d-flex gap-2">

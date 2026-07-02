@@ -53,28 +53,28 @@ BEGIN
     SELECT 'Extensions', 'Extensions plaatsen en verzorgen'
     WHERE NOT EXISTS (SELECT 1 FROM specialisaties WHERE naam = 'Extensions');
 
-    INSERT INTO medewerkers (voornaam, achternaam, email, functie)
-    SELECT 'Yassin', 'Attiah', 'yassin.attiah@kniplokettiko.nl', 'Kapper'
+    INSERT INTO medewerkers (voornaam, achternaam, telefoonnummer, email, functie)
+    SELECT 'Yassin', 'Attiah', '0612345678', 'yassin.attiah@kniplokettiko.nl', 'Kapper'
     WHERE NOT EXISTS (SELECT 1 FROM medewerkers WHERE email = 'yassin.attiah@kniplokettiko.nl');
 
-    INSERT INTO medewerkers (voornaam, achternaam, email, functie)
-    SELECT 'Mohammad', 'Abdullah', 'mohammad.abdullah@kniplokettiko.nl', 'Stylist'
+    INSERT INTO medewerkers (voornaam, achternaam, telefoonnummer, email, functie)
+    SELECT 'Mohammad', 'Abdullah', '0687654321', 'mohammad.abdullah@kniplokettiko.nl', 'Stylist'
     WHERE NOT EXISTS (SELECT 1 FROM medewerkers WHERE email = 'mohammad.abdullah@kniplokettiko.nl');
 
-    INSERT INTO medewerkers (voornaam, achternaam, email, functie)
-    SELECT 'Amina', 'El Idrissi', 'amina.elidrissi@kniplokettiko.nl', 'Extensions specialist'
+    INSERT INTO medewerkers (voornaam, achternaam, telefoonnummer, email, functie)
+    SELECT 'Amina', 'El Idrissi', '0611223344', 'amina.elidrissi@kniplokettiko.nl', 'Extensions specialist'
     WHERE NOT EXISTS (SELECT 1 FROM medewerkers WHERE email = 'amina.elidrissi@kniplokettiko.nl');
 
-    INSERT INTO medewerkers (voornaam, achternaam, email, functie)
-    SELECT 'Sara', 'Bakker', 'sara.bakker@kniplokettiko.nl', 'Colorist'
+    INSERT INTO medewerkers (voornaam, achternaam, telefoonnummer, email, functie)
+    SELECT 'Sara', 'Bakker', '0681122334', 'sara.bakker@kniplokettiko.nl', 'Colorist'
     WHERE NOT EXISTS (SELECT 1 FROM medewerkers WHERE email = 'sara.bakker@kniplokettiko.nl');
 
-    INSERT INTO medewerkers (voornaam, achternaam, email, functie)
-    SELECT 'Omar', 'Hassan', 'omar.hassan@kniplokettiko.nl', 'Kapper'
+    INSERT INTO medewerkers (voornaam, achternaam, telefoonnummer, email, functie)
+    SELECT 'Omar', 'Hassan', '0619988776', 'omar.hassan@kniplokettiko.nl', 'Kapper'
     WHERE NOT EXISTS (SELECT 1 FROM medewerkers WHERE email = 'omar.hassan@kniplokettiko.nl');
 
-    INSERT INTO medewerkers (voornaam, achternaam, email, functie)
-    SELECT 'Noor', 'Smit', 'noor.smit@kniplokettiko.nl', 'Stylist'
+    INSERT INTO medewerkers (voornaam, achternaam, telefoonnummer, email, functie)
+    SELECT 'Noor', 'Smit', '0613344556', 'noor.smit@kniplokettiko.nl', 'Stylist'
     WHERE NOT EXISTS (SELECT 1 FROM medewerkers WHERE email = 'noor.smit@kniplokettiko.nl');
 
     INSERT IGNORE INTO medewerkers_specialisaties (medewerker_id, specialisatie_id)
