@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Medewerker;
 use App\Models\User;
 
 it('shows the employee overview for authenticated users', function () {
@@ -9,14 +10,14 @@ it('shows the employee overview for authenticated users', function () {
         'role' => User::ROLE_OWNER,
     ]);
 
-    User::factory()->create([
+    Medewerker::query()->create([
         'name' => 'Mila de Vries',
         'email' => 'mila@example.com',
         'role' => User::ROLE_EMPLOYEE,
         'phone' => '0612345678',
     ]);
 
-    actingAs($owner);
+    $this->actingAs($owner);
 
     $response = $this->get(route('medewerkers.index'));
 
