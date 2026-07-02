@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Medewerker;
 use App\Models\User;
 use App\Models\Medewerker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,7 +14,7 @@ it('shows the employee overview for authenticated users', function () {
         'role' => User::ROLE_OWNER,
     ]);
 
-    Medewerker::create([
+    Medewerker::query()->create([
         'name' => 'Mila de Vries',
         'email' => 'mila@example.com',
         'role' => Medewerker::ROLE_EMPLOYEE,

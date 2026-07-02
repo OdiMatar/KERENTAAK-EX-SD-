@@ -1,0 +1,11 @@
+-- DELETE / ANNULEREN: sp_delete_appointment en sp_cancel_appointment
+-- De afspraak wordt bewust soft-deleted:
+-- status = 'Geannuleerd' en is_actief = 0.
+--
+-- Unhappy scenarios:
+-- - afspraak bestaat niet of hoort niet bij de klant
+-- - afspraak is al geannuleerd
+-- - afspraak is vandaag of in het verleden
+--
+-- Uitvoerbare procedure:
+-- database/stored-procedures/appointments_procedures.sql

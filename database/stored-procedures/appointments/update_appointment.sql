@@ -1,0 +1,12 @@
+-- UPDATE: sp_update_appointment
+-- Unhappy scenarios:
+-- - afspraak bestaat niet, hoort niet bij de klant of is niet meer gepland
+-- - afspraak is vandaag of in het verleden
+-- - nieuwe medewerker kan de gekozen behandeling niet uitvoeren
+-- - nieuwe datum/tijd ligt in het verleden
+-- - starttijd valt niet op een 15-minuten stap
+-- - nieuwe afspraak valt buiten 09:00 tot 19:00
+-- - medewerker is al bezet op het nieuwe tijdstip
+--
+-- Uitvoerbare procedure:
+-- database/stored-procedures/appointments_procedures.sql

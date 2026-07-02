@@ -36,7 +36,13 @@
                 @foreach ($modules as $module)
                     <div class="col-md-6 col-xl-4">
                         <x-ui.card title="{{ $module['title'] }}" description="{{ $module['description'] }}">
-                            <x-ui.badge variant="brand">{{ $module['badge'] }}</x-ui.badge>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <x-ui.badge variant="brand">{{ $module['badge'] }}</x-ui.badge>
+
+                                @if (($module['route'] ?? null) && Route::has($module['route']))
+                                    <x-ui.button size="sm" href="{{ route($module['route']) }}">Openen</x-ui.button>
+                                @endif
+                            </div>
                         </x-ui.card>
                     </div>
                 @endforeach

@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 it('toont gasten homepage inloggen en registreren in de navbar', function (): void {
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee('Homepage')
+        ->assertSee('Home')
         ->assertSee('Inloggen')
         ->assertSee('Registreren')
         ->assertDontSee('Profiel')
@@ -21,7 +21,7 @@ it('toont ingelogde gebruikers homepage profiel en uitloggen in de navbar', func
     $this->actingAs($user)
         ->get(route('home'))
         ->assertOk()
-        ->assertSee('Homepage')
+        ->assertSee('Home')
         ->assertSee('Profiel')
         ->assertSee('Uitloggen')
         ->assertDontSee('Inloggen')
@@ -35,7 +35,7 @@ it('toont de profielpagina voor ingelogde gebruikers', function (): void {
         ->get(route('profile'))
         ->assertOk()
         ->assertSee('Profiel')
-        ->assertSee($user->name)
+        ->assertSee(e($user->name), false)
         ->assertSee($user->email);
 });
 

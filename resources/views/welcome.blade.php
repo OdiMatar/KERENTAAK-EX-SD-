@@ -126,7 +126,7 @@
                 </div>
 
                 <div class="col-lg-5">
-                    <x-ui.card title="Bestellingen" description="Orderdatum, verwachte leverdatum en status blijven inzichtelijk voor medewerker en klant.">
+                    <x-ui.card title="Bestellingen" description="Besteldatum, verwachte leverdatum en status blijven inzichtelijk voor medewerker en klant.">
                         <ul class="text-muted small mb-0">
                             <li>Online bestellen door klanten</li>
                             <li>Afhalen en betalen in de salon</li>

@@ -1,0 +1,6 @@
+-- READ: sp_get_customer_appointments
+-- Toont geplande toekomstige afspraken van de ingelogde klant.
+-- Gebruikt joins met klanten, medewerkers, afspraak_behandeling en behandelingen.
+--
+-- Uitvoerbare procedure:
+-- database/stored-procedures/appointments_procedures.sql

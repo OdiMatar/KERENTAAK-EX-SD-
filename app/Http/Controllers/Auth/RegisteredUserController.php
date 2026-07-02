@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Services\TechnicalLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -22,10 +24,13 @@ class RegisteredUserController extends Controller
     public function store(StoreRegisteredUserRequest $request, TechnicalLogger $technicalLogger): RedirectResponse
     {
         try {
-            $user = User::query()->create([
-                ...$request->validated(),
-                'role' => User::ROLE_CUSTOMER,
+            $result = DB::selectOne('CALL sp_register_user(?, ?, ?)', [
+                $request->string('name')->toString(),
+                $request->string('email')->toString(),
+                Hash::make($request->string('password')->toString()),
             ]);
+
+            $user = User::query()->findOrFail($result->user_id);
 
             Auth::login($user);
             $request->session()->regenerate();

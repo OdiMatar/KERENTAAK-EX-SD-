@@ -1,0 +1,12 @@
+-- CREATE: sp_create_appointment
+-- Unhappy scenarios:
+-- - behandeling bestaat niet of is inactief
+-- - medewerker bestaat niet of is inactief
+-- - medewerker heeft niet de specialisatie voor de gekozen behandeling
+-- - datum/tijd ligt in het verleden
+-- - starttijd valt niet op een 15-minuten stap
+-- - afspraak valt buiten 09:00 tot 19:00
+-- - medewerker is al bezet op dit tijdstip
+--
+-- Uitvoerbare procedure:
+-- database/stored-procedures/appointments_procedures.sql
