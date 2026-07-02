@@ -1,5 +1,6 @@
 DROP PROCEDURE IF EXISTS sp_register_user;
 DROP PROCEDURE IF EXISTS sp_get_user_login_summary;
+DROP PROCEDURE IF EXISTS sp_get_employees_overview;
 
 DELIMITER //
 
@@ -29,6 +30,19 @@ BEGIN
         AND technical_logs.action = 'login'
     GROUP BY users.id, users.name, users.email
     ORDER BY last_login_at DESC;
+END //
+
+CREATE PROCEDURE sp_get_employees_overview()
+BEGIN
+    SELECT
+        users.id,
+        users.name,
+        users.email,
+        users.role,
+        users.phone
+    FROM users
+    WHERE users.role = 'medewerker'
+    ORDER BY users.name ASC;
 END //
 
 DELIMITER ;

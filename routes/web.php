@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BestellingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MedewerkerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

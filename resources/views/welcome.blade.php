@@ -18,6 +18,9 @@
 
                     <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
                         @auth
+                            @unless (auth()->user()->isCustomer())
+                                <x-ui.button href="{{ route('medewerkers.index') }}" size="lg">Overzicht medewerkers</x-ui.button>
+                            @endunless
                             <x-ui.button href="{{ route('profile') }}" size="lg">Naar profiel</x-ui.button>
                         @else
                             <x-ui.button href="{{ route('register') }}" size="lg">Afspraak starten</x-ui.button>

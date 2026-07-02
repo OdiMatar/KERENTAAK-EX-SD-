@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreMedewerkerRequest;
+use App\Http\Requests\UpdateMedewerkerRequest;
+use App\Models\Medewerker;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class MedewerkerController extends Controller
+{
+    private function ensureNotCustomer(Request $request): void
+    {
+        if ($request->user()?->isCustomer()) {
+            abort(403);
+        }
+    }
+
+    public function index(Request $request): View
+    {
+        $this->ensureNotCustomer($request);
+        $roles = Medewerker::roles();
+        $selectedRole = $request->query('role', '');
+
+        $medewerkers = Medewerker::query()
+            ->when(
+                $selectedRole !== '' && array_key_exists($selectedRole, $roles),
+                fn ($query) => $query->where('role', $selectedRole)
+            )
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('medewerkers.index', compact('medewerkers', 'roles', 'selectedRole'));
+    }
+
+    public function create(Request $request): View
+    {
+        $this->ensureNotCustomer($request);
+
+        return view('medewerkers.create', [
+            'roles' => Medewerker::roles(),
+        ]);
+    }
+
+    public function store(StoreMedewerkerRequest $request): RedirectResponse
+    {
+        $this->ensureNotCustomer($request);
+
+        Medewerker::create($request->validated());
+
+        return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol toegevoegd.');
+    }
+
+    public function edit(Request $request, Medewerker $medewerker): View
+    {
+        $this->ensureNotCustomer($request);
+
+        return view('medewerkers.edit', [
+            'medewerker' => $medewerker,
+            'roles' => Medewerker::roles(),
+        ]);
+    }
+
+    public function update(UpdateMedewerkerRequest $request, Medewerker $medewerker): RedirectResponse
+    {
+        $this->ensureNotCustomer($request);
+        $medewerker->update($request->validated());
+
+        return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol gewijzigd.');
+    }
+
+    public function destroy(Request $request, Medewerker $medewerker): RedirectResponse
+    {
+        $this->ensureNotCustomer($request);
+
+        Medewerker::destroy($medewerker->getKey());
+
+        return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
+    }
+}
