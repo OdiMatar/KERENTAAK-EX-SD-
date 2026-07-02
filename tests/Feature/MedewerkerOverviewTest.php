@@ -1,6 +1,10 @@
 <?php
 
 use App\Models\User;
+use App\Models\Medewerker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 it('shows the employee overview for authenticated users', function () {
     $owner = User::factory()->create([
@@ -9,14 +13,14 @@ it('shows the employee overview for authenticated users', function () {
         'role' => User::ROLE_OWNER,
     ]);
 
-    User::factory()->create([
+    Medewerker::create([
         'name' => 'Mila de Vries',
         'email' => 'mila@example.com',
-        'role' => User::ROLE_EMPLOYEE,
+        'role' => Medewerker::ROLE_EMPLOYEE,
         'phone' => '0612345678',
     ]);
 
-    actingAs($owner);
+    $this->actingAs($owner);
 
     $response = $this->get(route('medewerkers.index'));
 
