@@ -2,6 +2,9 @@
 
 use App\Models\Medewerker;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 it('shows the employee overview for authenticated users', function () {
     $owner = User::factory()->create([
@@ -13,7 +16,7 @@ it('shows the employee overview for authenticated users', function () {
     Medewerker::query()->create([
         'name' => 'Mila de Vries',
         'email' => 'mila@example.com',
-        'role' => User::ROLE_EMPLOYEE,
+        'role' => Medewerker::ROLE_EMPLOYEE,
         'phone' => '0612345678',
     ]);
 
