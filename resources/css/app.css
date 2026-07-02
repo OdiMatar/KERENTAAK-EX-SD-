@@ -246,6 +246,24 @@ body {
     min-width: 6rem;
 }
 
+.klant-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgb(31 36 32 / 0.55);
+}
+
+.klant-delete-dialog {
+    width: min(100%, 28rem);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background: #fff;
+    box-shadow: var(--shadow-panel);
+}
+
 @media (max-width: 575.98px) {
     .site-navbar-inner {
         align-items: stretch;
