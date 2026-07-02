@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['gebruiker_id', 'voornaam', 'achternaam', 'telefoonnummer', 'email'])]
+#[Fillable(['gebruiker_id', 'voornaam', 'achternaam', 'adres', 'telefoonnummer', 'email', 'opmerking'])]
 class Klant extends Model
 {
     public const CREATED_AT = 'datum_aangemaakt';
@@ -14,6 +14,11 @@ class Klant extends Model
     public const UPDATED_AT = 'datum_gewijzigd';
 
     protected $table = 'klanten';
+
+    public function getNaamAttribute(): string
+    {
+        return trim($this->voornaam.' '.$this->achternaam);
+    }
 
     public function afspraken(): HasMany
     {
