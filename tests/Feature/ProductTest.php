@@ -1,10 +1,15 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function (): void {
+    $this->seed(ProductSeeder::class);
+});
 
 function productUser(string $role = User::ROLE_OWNER): User
 {
