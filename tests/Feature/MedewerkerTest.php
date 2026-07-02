@@ -154,6 +154,13 @@ it('licht een gewijzigde medewerker uit in het overzicht', function () {
         'phone' => '0612345678',
     ]);
 
+    Medewerker::query()->create([
+        'name' => 'Aaron Janssen',
+        'email' => 'aaron@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'phone' => '0611111111',
+    ]);
+
     $response = $this->actingAs($owner)
         ->followingRedirects()
         ->put(route('medewerkers.update', $medewerker), [
@@ -167,5 +174,6 @@ it('licht een gewijzigde medewerker uit in het overzicht', function () {
         ->assertSee('De medewerker is succesvol gewijzigd.')
         ->assertSee('Mila Bakker')
         ->assertSee('0699999999')
-        ->assertSee('medewerker-highlight', false);
+        ->assertSee('medewerker-highlight', false)
+        ->assertSeeInOrder(['Mila Bakker', 'Aaron Janssen']);
 });

@@ -36,7 +36,7 @@
                         </thead>
                         <tbody>
                             @forelse ($medewerkers as $medewerker)
-                                <tr @class(['medewerker-highlight' => session('highlighted_medewerker_id') === $medewerker->id])>
+                                <tr @class(['medewerker-highlight' => (int) $highlightedMedewerkerId === $medewerker->id])>
                                     <td>{{ $medewerker->volledigeNaam() }}</td>
                                     <td>{{ $medewerker->functie ?? $medewerker->role }}</td>
                                     <td>{{ $medewerker->email }}</td>

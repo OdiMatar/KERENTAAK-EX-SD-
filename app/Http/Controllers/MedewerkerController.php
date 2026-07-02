@@ -23,6 +23,7 @@ class MedewerkerController extends Controller
         $this->ensureNotCustomer($request);
         $roles = Medewerker::roles();
         $selectedRole = $request->query('role', '');
+        $highlightedMedewerkerId = session('highlighted_medewerker_id');
 
         $medewerkers = Medewerker::query()
             ->where('is_active', true)
@@ -30,10 +31,14 @@ class MedewerkerController extends Controller
                 $selectedRole !== '' && array_key_exists($selectedRole, $roles),
                 fn ($query) => $query->where('role', $selectedRole)
             )
+            ->when(
+                $highlightedMedewerkerId,
+                fn ($query) => $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$highlightedMedewerkerId])
+            )
             ->orderBy('name', 'asc')
             ->get();
 
-        return view('medewerkers.index', compact('medewerkers', 'roles', 'selectedRole'));
+        return view('medewerkers.index', compact('medewerkers', 'roles', 'selectedRole', 'highlightedMedewerkerId'));
     }
 
     public function create(Request $request): View
