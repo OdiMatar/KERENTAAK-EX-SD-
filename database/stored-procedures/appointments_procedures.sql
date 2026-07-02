@@ -132,7 +132,7 @@ BEGIN
 
     SELECT id INTO v_legacy_user_id
     FROM gebruikers
-    WHERE email = v_email
+    WHERE email COLLATE utf8mb4_unicode_ci = v_email COLLATE utf8mb4_unicode_ci
     LIMIT 1;
 
     IF v_legacy_user_id IS NULL THEN
@@ -154,7 +154,7 @@ BEGIN
     SELECT id INTO v_customer_id
     FROM klanten
     WHERE gebruiker_id = v_legacy_user_id
-        OR email = v_email
+        OR email COLLATE utf8mb4_unicode_ci = v_email COLLATE utf8mb4_unicode_ci
     LIMIT 1;
 
     IF v_customer_id IS NULL THEN

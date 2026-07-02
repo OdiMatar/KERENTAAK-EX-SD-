@@ -20,15 +20,21 @@ class AppointmentController extends Controller
 {
     public function index(TechnicalLogger $technicalLogger): View
     {
-        $customerId = $this->ensureCustomerIdForAuthenticatedUser();
-        $appointments = collect(DB::select('CALL sp_get_customer_appointments(?)', [$customerId]));
+        /** @var User $user */
+        $user = auth()->user();
+        $isStaffOverview = $user->isOwner() || $user->isEmployee();
+        $appointments = $isStaffOverview
+            ? $this->allPlannedAppointments()
+            : collect(DB::select('CALL sp_get_customer_appointments(?)', [$this->ensureCustomerIdForAuthenticatedUser()]));
 
         $technicalLogger->record('appointment_index', 'Klant heeft afsprakenoverzicht geopend.', auth()->id(), [
             'appointments_count' => $appointments->count(),
+            'is_staff_overview' => $isStaffOverview,
         ]);
 
         return view('appointments.index', [
             'appointments' => $appointments,
+            'isStaffOverview' => $isStaffOverview,
         ]);
     }
 
@@ -87,8 +93,13 @@ class AppointmentController extends Controller
 
     public function edit(int $appointment, TechnicalLogger $technicalLogger): View|RedirectResponse
     {
-        $customerId = $this->ensureCustomerIdForAuthenticatedUser();
-        $appointmentDetails = $this->appointmentForCustomer($appointment, $customerId);
+        /** @var User $user */
+        $user = auth()->user();
+        $isStaffOverview = $user->isOwner() || $user->isEmployee();
+        $customerId = $isStaffOverview ? null : $this->ensureCustomerIdForAuthenticatedUser();
+        $appointmentDetails = $isStaffOverview
+            ? $this->appointmentForStaff($appointment)
+            : $this->appointmentForCustomer($appointment, (int) $customerId);
 
         if ($appointmentDetails === null) {
             $technicalLogger->record('appointment_edit_failed', 'Afspraak wijzigen geopend voor onbekende afspraak.', auth()->id(), [
@@ -109,12 +120,18 @@ class AppointmentController extends Controller
             'appointment' => $appointmentDetails,
             'treatments' => $this->activeTreatments(),
             'employees' => $this->activeEmployees(),
+            'isStaffOverview' => $isStaffOverview,
         ]);
     }
 
     public function update(UpdateAppointmentRequest $request, int $appointment, TechnicalLogger $technicalLogger): RedirectResponse
     {
-        $customerId = $this->ensureCustomerIdForAuthenticatedUser();
+        /** @var User $user */
+        $user = auth()->user();
+        $isStaffOverview = $user->isOwner() || $user->isEmployee();
+        $customerId = $isStaffOverview
+            ? $this->customerIdForAppointment($appointment)
+            : $this->ensureCustomerIdForAuthenticatedUser();
 
         try {
             DB::select('CALL sp_update_appointment(?, ?, ?, ?, ?, ?)', [
@@ -157,7 +174,11 @@ class AppointmentController extends Controller
 
     public function cancel(int $appointment, TechnicalLogger $technicalLogger): RedirectResponse
     {
-        $customerId = $this->ensureCustomerIdForAuthenticatedUser();
+        /** @var User $user */
+        $user = auth()->user();
+        $customerId = ($user->isOwner() || $user->isEmployee())
+            ? $this->customerIdForAppointment($appointment)
+            : $this->ensureCustomerIdForAuthenticatedUser();
 
         try {
             DB::select('CALL sp_cancel_appointment(?, ?)', [$appointment, $customerId]);
@@ -188,6 +209,34 @@ class AppointmentController extends Controller
         $result = DB::selectOne('CALL sp_ensure_customer_for_user(?)', [$user->id]);
 
         return (int) $result->customer_id;
+    }
+
+    /**
+     * @return Collection<int, object>
+     */
+    private function allPlannedAppointments(): Collection
+    {
+        return DB::table('afspraken')
+            ->join('klanten', 'klanten.id', '=', 'afspraken.klant_id')
+            ->join('medewerkers', 'medewerkers.id', '=', 'afspraken.medewerker_id')
+            ->join('afspraak_behandeling', 'afspraak_behandeling.afspraak_id', '=', 'afspraken.id')
+            ->join('behandelingen', 'behandelingen.id', '=', 'afspraak_behandeling.behandeling_id')
+            ->where('afspraken.status', 'Gepland')
+            ->where('afspraken.is_actief', true)
+            ->whereRaw("CAST(CONCAT(afspraken.datum, ' ', afspraken.starttijd) AS DATETIME) >= NOW()")
+            ->select([
+                'afspraken.id',
+                DB::raw("CONCAT(klanten.voornaam, ' ', klanten.achternaam) AS customer_name"),
+                DB::raw("TIME_FORMAT(afspraken.starttijd, '%H:%i') AS start_time"),
+                DB::raw("TIME_FORMAT(afspraken.eindtijd, '%H:%i') AS end_time"),
+                'afspraken.datum AS date',
+                DB::raw("CONCAT(medewerkers.voornaam, ' ', medewerkers.achternaam) AS employee_name"),
+                'behandelingen.naam AS treatment_name',
+                'afspraken.status',
+            ])
+            ->orderBy('afspraken.datum')
+            ->orderBy('afspraken.starttijd')
+            ->get();
     }
 
     /**
@@ -230,6 +279,32 @@ class AppointmentController extends Controller
                 'behandelingen.naam as behandeling_naam',
             ])
             ->first();
+    }
+
+    private function appointmentForStaff(int $appointmentId): ?object
+    {
+        return DB::table('afspraken')
+            ->join('afspraak_behandeling', 'afspraken.id', '=', 'afspraak_behandeling.afspraak_id')
+            ->join('behandelingen', 'afspraak_behandeling.behandeling_id', '=', 'behandelingen.id')
+            ->where('afspraken.id', $appointmentId)
+            ->where('afspraken.status', 'Gepland')
+            ->where('afspraken.is_actief', true)
+            ->select([
+                'afspraken.id',
+                'afspraken.medewerker_id',
+                'afspraken.datum',
+                DB::raw("TIME_FORMAT(afspraken.starttijd, '%H:%i') as starttijd"),
+                'afspraak_behandeling.behandeling_id',
+                'behandelingen.naam as behandeling_naam',
+            ])
+            ->first();
+    }
+
+    private function customerIdForAppointment(int $appointmentId): int
+    {
+        return (int) DB::table('afspraken')
+            ->where('id', $appointmentId)
+            ->value('klant_id');
     }
 
     private function backWithStoredProcedureError(QueryException $exception, string $fallbackMessage): RedirectResponse

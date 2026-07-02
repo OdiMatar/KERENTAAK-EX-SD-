@@ -2,8 +2,8 @@
     <main>
         <x-ui.section
             eyebrow="Afspraken"
-            title="Mijn afspraken"
-            description="Bekijk, wijzig of annuleer je geplande afspraken."
+            title="{{ $isStaffOverview ? 'Afspraken overzicht' : 'Mijn afspraken' }}"
+            description="{{ $isStaffOverview ? 'Bekijk alle geplande afspraken van klanten.' : 'Bekijk, wijzig of annuleer je geplande afspraken.' }}"
         >
             <div class="d-flex flex-column flex-sm-row gap-3 justify-content-between align-items-sm-center mb-4">
                 <x-ui.button href="{{ route('appointments.create') }}">Maak Nieuw Afspraak</x-ui.button>
