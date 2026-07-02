@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BestellingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KlantController;
 use App\Http\Controllers\MedewerkerController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,7 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::resource('klanten', KlantController::class)->parameters(['klanten' => 'klant'])->names('klanten');
     Route::resource('medewerkers', MedewerkerController::class)->except(['show'])->names('medewerkers');
     Route::get('/bestellingen', [BestellingController::class, 'index'])->name('bestellingen.index');
     Route::get('/bestellingen/toevoegen', [BestellingController::class, 'create'])->name('bestellingen.create');

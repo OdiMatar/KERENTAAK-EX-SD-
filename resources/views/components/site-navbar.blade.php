@@ -27,6 +27,7 @@
                     <a href="{{ route('bestellingen.index') }}" class="{{ request()->routeIs('bestellingen.*') ? $activeLinkClass : $linkClass }}">Bestellingen</a>
 
                     @unless (auth()->user()->isCustomer())
+                        <a href="{{ route('klanten.index') }}" class="{{ request()->routeIs('klanten.*') ? $activeLinkClass : $linkClass }}">Klanten</a>
                         <a href="{{ route('medewerkers.index') }}" class="{{ request()->routeIs('medewerkers.*') ? $activeLinkClass : $linkClass }}">Medewerkers</a>
                     @endunless
 
