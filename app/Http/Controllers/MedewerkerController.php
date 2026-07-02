@@ -25,6 +25,7 @@ class MedewerkerController extends Controller
         $selectedRole = $request->query('role', '');
 
         $medewerkers = Medewerker::query()
+            ->where('is_active', true)
             ->when(
                 $selectedRole !== '' && array_key_exists($selectedRole, $roles),
                 fn ($query) => $query->where('role', $selectedRole)
@@ -75,7 +76,16 @@ class MedewerkerController extends Controller
     {
         $this->ensureNotCustomer($request);
 
-        Medewerker::destroy($medewerker->getKey());
+        if ($medewerker->afspraken()->exists()) {
+            $medewerker->update([
+                'is_active' => false,
+                'is_actief' => false,
+            ]);
+
+            return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
+        }
+
+        $medewerker->delete();
 
         return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
     }
