@@ -50,6 +50,18 @@ it('toont een overzicht met alle bestellingen', function (): void {
         ->assertSee("return confirm('Weet je zeker dat je deze bestelling wilt verwijderen?')", false);
 });
 
+it('staat de bestelling pagina niet toe voor ingelogde klanten', function (): void {
+    $customer = bestellingUser(User::ROLE_CUSTOMER);
+
+    $this->actingAs($customer)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertDontSee('Bestellingen');
+
+    $this->get(route('bestellingen.index'))
+        ->assertForbidden();
+});
+
 it('heeft demo data met minimaal vijf bestellingen en vijf producten per bestelling', function (): void {
     expect(DB::table('bestellingen')->where('is_actief', true)->count())->toBeGreaterThanOrEqual(5);
 
