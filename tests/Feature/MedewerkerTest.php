@@ -102,7 +102,8 @@ it('wijzigt naam en telefoon van een medewerker zichtbaar in het overzicht', fun
             'phone' => '0698765432',
         ])
         ->assertRedirect(route('medewerkers.index'))
-        ->assertSessionHas('status', 'De medewerker is succesvol gewijzigd.');
+        ->assertSessionHas('status', 'De medewerker is succesvol gewijzigd.')
+        ->assertSessionHas('highlighted_medewerker_id', $medewerker->id);
 
     $this->assertDatabaseHas('medewerkers', [
         'id' => $medewerker->id,
@@ -118,4 +119,53 @@ it('wijzigt naam en telefoon van een medewerker zichtbaar in het overzicht', fun
         ->assertOk()
         ->assertSee('Yassin Jansen')
         ->assertSee('0698765432');
+});
+
+it('licht een toegevoegde medewerker uit in het overzicht', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $response = $this->actingAs($owner)
+        ->followingRedirects()
+        ->post(route('medewerkers.store'), [
+            'name' => 'Nora Peters',
+            'email' => 'nora@example.com',
+            'role' => Medewerker::ROLE_EMPLOYEE,
+            'phone' => '0610101010',
+        ]);
+
+    $response->assertOk()
+        ->assertSee('De medewerker is succesvol toegevoegd.')
+        ->assertSee('Nora Peters')
+        ->assertSee('0610101010')
+        ->assertSee('medewerker-highlight', false);
+});
+
+it('licht een gewijzigde medewerker uit in het overzicht', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $medewerker = Medewerker::query()->create([
+        'name' => 'Mila de Vries',
+        'email' => 'mila-wijziging@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'phone' => '0612345678',
+    ]);
+
+    $response = $this->actingAs($owner)
+        ->followingRedirects()
+        ->put(route('medewerkers.update', $medewerker), [
+            'name' => 'Mila Bakker',
+            'email' => 'mila-wijziging@example.com',
+            'role' => Medewerker::ROLE_MANAGER,
+            'phone' => '0699999999',
+        ]);
+
+    $response->assertOk()
+        ->assertSee('De medewerker is succesvol gewijzigd.')
+        ->assertSee('Mila Bakker')
+        ->assertSee('0699999999')
+        ->assertSee('medewerker-highlight', false);
 });

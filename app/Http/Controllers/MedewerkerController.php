@@ -49,9 +49,12 @@ class MedewerkerController extends Controller
     {
         $this->ensureNotCustomer($request);
 
-        Medewerker::create($request->validated());
+        $medewerker = Medewerker::create($request->validated());
 
-        return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol toegevoegd.');
+        return redirect()
+            ->route('medewerkers.index')
+            ->with('status', 'De medewerker is succesvol toegevoegd.')
+            ->with('highlighted_medewerker_id', $medewerker->id);
     }
 
     public function edit(Request $request, Medewerker $medewerker): View
@@ -69,7 +72,10 @@ class MedewerkerController extends Controller
         $this->ensureNotCustomer($request);
         $medewerker->update($request->validated());
 
-        return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol gewijzigd.');
+        return redirect()
+            ->route('medewerkers.index')
+            ->with('status', 'De medewerker is succesvol gewijzigd.')
+            ->with('highlighted_medewerker_id', $medewerker->id);
     }
 
     public function destroy(Request $request, Medewerker $medewerker): RedirectResponse
