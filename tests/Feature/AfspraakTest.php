@@ -12,33 +12,37 @@ function afspraakUser(): User
 }
 
 beforeEach(function (): void {
-    DB::table('behandelingen')->insert([
-        'naam' => 'Knippen',
-        'categorie' => 'Haar',
-        'duur' => 30,
-        'prijs' => 25.00,
-        'omschrijving' => 'Knipbehandeling',
-        'is_actief' => true,
-        'datum_aangemaakt' => now(),
-        'datum_gewijzigd' => now(),
-    ]);
+    DB::table('behandelingen')->updateOrInsert(
+        ['naam' => 'Knippen'],
+        [
+            'categorie' => 'Haar',
+            'duur' => 30,
+            'prijs' => 25.00,
+            'omschrijving' => 'Knipbehandeling',
+            'is_actief' => true,
+            'datum_aangemaakt' => now(),
+            'datum_gewijzigd' => now(),
+        ],
+    );
 
-    DB::table('medewerkers')->insert([
-        'name' => 'Sara Kapper',
-        'voornaam' => 'Sara',
-        'achternaam' => 'Kapper',
-        'email' => 'sara.kapper@example.com',
-        'role' => 'medewerker',
-        'phone' => '0612345678',
-        'telefoonnummer' => '0612345678',
-        'functie' => 'Medewerker',
-        'is_active' => true,
-        'is_actief' => true,
-        'datum_aangemaakt' => now(),
-        'datum_gewijzigd' => now(),
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+    DB::table('medewerkers')->updateOrInsert(
+        ['email' => 'sara.kapper@example.com'],
+        [
+            'name' => 'Sara Kapper',
+            'voornaam' => 'Sara',
+            'achternaam' => 'Kapper',
+            'role' => 'medewerker',
+            'phone' => '0612345678',
+            'telefoonnummer' => '0612345678',
+            'functie' => 'Medewerker',
+            'is_active' => true,
+            'is_actief' => true,
+            'datum_aangemaakt' => now(),
+            'datum_gewijzigd' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    );
 });
 
 it('toont de pagina om een afspraak te maken', function (): void {
