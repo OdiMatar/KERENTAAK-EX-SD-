@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -14,7 +16,10 @@ class ProductController extends Controller
     {
         $this->authorizeProductManagement();
 
-        $products = DB::select('CALL sp_producten_overzicht()');
+        $products = Product::query()
+            ->where('is_actief', true)
+            ->orderBy('naam')
+            ->get();
 
         return view('products.index', ['products' => $products]);
     }
@@ -31,65 +36,78 @@ class ProductController extends Controller
         $this->authorizeProductManagement();
 
         $validated = $request->validate($this->rules());
-        $result = DB::selectOne(
-            'CALL sp_product_toevoegen(?, ?, ?, ?, ?, ?, ?)',
-            $this->procedureData($validated),
-        );
 
-        if (! $result?->gelukt) {
+        if ($this->productExists($validated['naam'], $validated['barcode'])) {
             return back()->withInput()->with('error', 'Product is niet toegevoegd.');
         }
+
+        Product::query()->create([
+            ...$validated,
+            'categorie_id' => $this->defaultCategoryId(),
+            'leverancier_id' => $this->defaultSupplierId(),
+            'status' => 'Beschikbaar',
+            'is_actief' => true,
+        ]);
 
         return redirect()
             ->route('products.index')
             ->with('status', 'Product is toegevoegd.');
     }
 
-    public function edit(int $product): View
+    public function edit(Product $product): View
     {
         $this->authorizeProductManagement();
-
-        $product = DB::selectOne('CALL sp_product_zoeken(?)', [$product]);
-        abort_unless($product, 404);
 
         return view('products.edit', ['product' => $product]);
     }
 
-    public function update(Request $request, int $product): RedirectResponse
+    public function update(Request $request, Product $product): RedirectResponse
     {
         $this->authorizeProductManagement();
 
-        $validated = $request->validate($this->rules());
-        $result = DB::selectOne(
-            'CALL sp_product_wijzigen(?, ?, ?, ?, ?, ?, ?, ?)',
-            [$product, ...$this->procedureData($validated)],
-        );
+        $validated = $request->validate($this->rules($product));
+        $product->fill($validated);
 
-        if (! $result?->gelukt) {
+        if (! $product->isDirty()) {
             return back()->withInput()->with('error', 'Product is niet gewijzigd.');
         }
+
+        $product->save();
 
         return redirect()
             ->route('products.index')
             ->with('status', 'Product is gewijzigd.');
     }
 
-    public function destroy(int $product): RedirectResponse
+    public function destroy(Product $product): RedirectResponse
     {
         $this->authorizeProductManagement();
-        $result = DB::selectOne('CALL sp_product_verwijderen(?)', [$product]);
 
-        return back()->with($result?->gelukt ? 'status' : 'error', $result?->gelukt ? 'Product is verwijderd.' : 'Product was al verwijderd.');
+        if (! $product->is_actief) {
+            return back()->with('error', 'Product was al verwijderd.');
+        }
+
+        $product->update([
+            'is_actief' => false,
+            'status' => 'Niet beschikbaar',
+        ]);
+
+        return back()->with('status', 'Product is verwijderd.');
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function rules(): array
+    private function rules(?Product $product = null): array
     {
         return [
             'naam' => ['required', 'string', 'max:150'],
-            'barcode' => ['required', 'string', 'max:20'],
+            'barcode' => array_filter([
+                'required',
+                'string',
+                'max:20',
+                $product ? Rule::unique('products', 'barcode')->ignore($product->id) : null,
+            ]),
             'prijs' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'voorraad' => ['required', 'integer', 'min:0'],
             'houdbaarheidsdatum' => ['nullable', 'date'],
@@ -98,21 +116,32 @@ class ProductController extends Controller
         ];
     }
 
-    /**
-     * @param  array<string, mixed>  $validated
-     * @return array<int, mixed>
-     */
-    private function procedureData(array $validated): array
+    private function productExists(string $name, string $barcode): bool
     {
-        return [
-            $validated['naam'],
-            $validated['barcode'],
-            $validated['prijs'],
-            $validated['voorraad'],
-            $validated['houdbaarheidsdatum'] ?? null,
-            $validated['omschrijving'] ?? null,
-            $validated['opmerking'] ?? null,
-        ];
+        return Product::query()
+            ->where('naam', $name)
+            ->orWhere('barcode', $barcode)
+            ->exists();
+    }
+
+    private function defaultCategoryId(): int
+    {
+        DB::table('categories')->updateOrInsert(
+            ['naam' => 'Algemeen'],
+            ['omschrijving' => 'Standaardcategorie voor producten', 'is_actief' => true],
+        );
+
+        return (int) DB::table('categories')->where('naam', 'Algemeen')->value('id');
+    }
+
+    private function defaultSupplierId(): int
+    {
+        DB::table('leveranciers')->updateOrInsert(
+            ['naam' => 'Kniploket Tiko'],
+            ['contactpersoon' => 'Lisa Jansen', 'email' => 'info@kniplokettiko.nl', 'is_actief' => true],
+        );
+
+        return (int) DB::table('leveranciers')->where('naam', 'Kniploket Tiko')->value('id');
     }
 
     private function authorizeProductManagement(): void
