@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Bestelling;
 use App\Models\Medewerker;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -102,102 +101,7 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
-        $bestellingen = [
-            [
-                'klant_naam' => 'Sanne Bakker',
-                'orderdatum' => now()->subDays(2)->toDateString(),
-                'verwachte_leverdatum' => now()->addDays(3)->toDateString(),
-                'status' => 'Nieuw',
-                'totaalprijs' => 0,
-                'opmerking' => 'Behandelingen voor klant.',
-                'is_actief' => true,
-            ],
-            [
-                'klant_naam' => 'Lisa Jansen',
-                'orderdatum' => now()->subDays(5)->toDateString(),
-                'verwachte_leverdatum' => now()->subDays(1)->toDateString(),
-                'status' => 'In behandeling',
-                'totaalprijs' => 0,
-                'opmerking' => 'Reeds bevestigd.',
-                'is_actief' => true,
-            ],
-            [
-                'klant_naam' => 'Daan Smit',
-                'orderdatum' => now()->subDays(10)->toDateString(),
-                'verwachte_leverdatum' => now()->addDays(1)->toDateString(),
-                'status' => 'Afgerond',
-                'totaalprijs' => 0,
-                'opmerking' => 'Voltooide order.',
-                'is_actief' => true,
-            ],
-        ];
-
-        $products = [
-            [
-                'naam' => 'Knipbeurt basis',
-                'categorie' => 'Behandeling',
-                'ean_code' => '8712345678901',
-                'prijs' => 45.00,
-                'voorraad' => 20,
-                'leverancier' => 'KnipTako',
-            ],
-            [
-                'naam' => 'Knipbeurt premium',
-                'categorie' => 'Behandeling',
-                'ean_code' => '8712345678902',
-                'prijs' => 75.00,
-                'voorraad' => 12,
-                'leverancier' => 'KnipTako',
-            ],
-            [
-                'naam' => 'Kleurbehandeling',
-                'categorie' => 'Service',
-                'ean_code' => '8712345678903',
-                'prijs' => 60.00,
-                'voorraad' => 8,
-                'leverancier' => 'KnipTako',
-            ],
-        ];
-
-        foreach ($products as $product) {
-            DB::table('products')->updateOrInsert(
-                ['ean_code' => $product['ean_code']],
-                [
-                    ...$product,
-                    'is_actief' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            );
-        }
-
-        foreach ($bestellingen as $index => $bestellingData) {
-            $bestelling = Bestelling::query()->updateOrCreate(
-                [
-                    'klant_naam' => $bestellingData['klant_naam'],
-                    'orderdatum' => $bestellingData['orderdatum'],
-                ],
-                $bestellingData,
-            );
-
-            $product = DB::table('products')->where('naam', $products[$index % count($products)]['naam'])->first();
-
-            if ($product) {
-                DB::table('bestelregels')->insertOrIgnore([
-                    'bestelling_id' => $bestelling->id,
-                    'product_id' => $product->id,
-                    'aantal' => $index + 1,
-                    'prijs_per_stuk' => $product->prijs,
-                    'subtotaal' => $product->prijs * ($index + 1),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-        }
-
-        foreach (Bestelling::query()->get() as $bestelling) {
-            $bestelling->updateTotaalprijs();
-        }
+        $this->call(BestellingSeeder::class);
 
         foreach ($this->klanten() as $klant) {
             DB::table('klanten')->updateOrInsert(

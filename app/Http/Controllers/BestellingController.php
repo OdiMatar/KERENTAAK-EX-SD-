@@ -98,7 +98,7 @@ class BestellingController extends Controller
         $this->authorizeBestellingBeheer();
 
         if (! $bestelling->is_actief) {
-            return back()->with('error', 'Bestelling was al verwijderd.');
+            return back()->with('error', 'De bestelling kon niet verwijderd worden, omdat hij al verwijderd was.');
         }
 
         $bestelling->update(['is_actief' => false]);
@@ -141,7 +141,10 @@ class BestellingController extends Controller
     public function destroyRegel(Bestelling $bestelling, int $bestelregel): RedirectResponse
     {
         $this->authorizeBestellingBeheer();
-        $this->abortAlsRegelNietInBestellingZit($bestelling, $bestelregel);
+
+        if (! $this->regelZitInBestelling($bestelling, $bestelregel)) {
+            return back()->with('error', 'Het product kon niet verwijderd worden, omdat hij al verwijderd was.');
+        }
 
         DB::table('bestelregels')->where('id', $bestelregel)->delete();
         $bestelling->updateTotaalprijs();
@@ -196,7 +199,7 @@ class BestellingController extends Controller
         );
 
         if (! $gewijzigd) {
-            return back()->withInput()->with('error', 'Product is niet gewijzigd.');
+            return back()->withInput()->with('error', 'Er zijn geen wijzigingen opgeslagen, omdat de productgegevens hetzelfde zijn gebleven.');
         }
 
         DB::table('products')->where('id', $product)->update($data);
@@ -210,12 +213,15 @@ class BestellingController extends Controller
     public function destroyProduct(Bestelling $bestelling, int $product): RedirectResponse
     {
         $this->authorizeBestellingBeheer();
-        $this->abortAlsProductNietInBestellingZit($bestelling, $product);
+
+        if (! $this->productZitInBestelling($bestelling, $product)) {
+            return back()->with('error', 'Het product kon niet verwijderd worden, omdat hij al verwijderd was.');
+        }
 
         $productData = $this->product($product);
 
         if (! $productData->is_actief) {
-            return back()->with('error', 'Product was al verwijderd.');
+            return back()->with('error', 'Het product kon niet verwijderd worden, omdat hij al verwijderd was.');
         }
 
         DB::table('products')->where('id', $product)->update(['is_actief' => false]);
@@ -233,7 +239,7 @@ class BestellingController extends Controller
         return [
             'klant_naam' => ['required', 'string', 'max:150'],
             'orderdatum' => ['required', 'date'],
-            'verwachte_leverdatum' => ['required', 'date', 'after_or_equal:orderdatum'],
+            'verwachte_leverdatum' => ['required', 'date', 'after_or_equal:today', 'after_or_equal:orderdatum'],
             'status' => ['required', 'string', 'max:50'],
             'opmerking' => ['nullable', 'string', 'max:255'],
         ];
@@ -303,24 +309,28 @@ class BestellingController extends Controller
 
     private function abortAlsProductNietInBestellingZit(Bestelling $bestelling, int $product): void
     {
-        abort_unless(
-            DB::table('bestelregels')
-                ->where('bestelling_id', $bestelling->id)
-                ->where('product_id', $product)
-                ->exists(),
-            404
-        );
+        abort_unless($this->productZitInBestelling($bestelling, $product), 404);
     }
 
     private function abortAlsRegelNietInBestellingZit(Bestelling $bestelling, int $bestelregel): void
     {
-        abort_unless(
-            DB::table('bestelregels')
-                ->where('id', $bestelregel)
-                ->where('bestelling_id', $bestelling->id)
-                ->exists(),
-            404
-        );
+        abort_unless($this->regelZitInBestelling($bestelling, $bestelregel), 404);
+    }
+
+    private function productZitInBestelling(Bestelling $bestelling, int $product): bool
+    {
+        return DB::table('bestelregels')
+            ->where('bestelling_id', $bestelling->id)
+            ->where('product_id', $product)
+            ->exists();
+    }
+
+    private function regelZitInBestelling(Bestelling $bestelling, int $bestelregel): bool
+    {
+        return DB::table('bestelregels')
+            ->where('id', $bestelregel)
+            ->where('bestelling_id', $bestelling->id)
+            ->exists();
     }
 
     private function bewaarBestelregel(Bestelling $bestelling, object $product, int $aantal): void
