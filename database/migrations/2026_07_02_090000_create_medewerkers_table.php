@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('medewerkers', function (Blueprint $table): void {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->unsignedBigInteger('gebruiker_id')->nullable();
             $table->string('voornaam')->nullable();
             $table->string('achternaam')->nullable();

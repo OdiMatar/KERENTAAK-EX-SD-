@@ -198,5 +198,34 @@ class DatabaseSeeder extends Seeder
         foreach (Bestelling::query()->get() as $bestelling) {
             $bestelling->updateTotaalprijs();
         }
+
+        $this->loadAppointmentStoredProcedures();
+        DB::statement('CALL sp_seed_appointment_basisdata()');
+    }
+
+    private function loadAppointmentStoredProcedures(): void
+    {
+        $sql = file_get_contents(database_path('stored-procedures/appointments_procedures.sql'));
+
+        if ($sql === false) {
+            return;
+        }
+
+        [$beforeDelimiter, $afterDelimiter] = explode('DELIMITER //', $sql, 2);
+        [$procedures, $afterProcedures] = explode('DELIMITER ;', $afterDelimiter, 2);
+
+        foreach (array_filter(array_map('trim', explode(';', $beforeDelimiter))) as $statement) {
+            DB::unprepared($statement);
+        }
+
+        foreach (array_filter(array_map('trim', preg_split('/\s*\/\/\s*/', $procedures))) as $statement) {
+            DB::unprepared($statement);
+        }
+
+        foreach (array_filter(array_map('trim', explode(';', $afterProcedures))) as $statement) {
+            if ($statement !== 'CALL sp_seed_appointment_basisdata()') {
+                DB::unprepared($statement);
+            }
+        }
     }
 }

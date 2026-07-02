@@ -71,6 +71,53 @@ body {
     --bs-btn-hover-border-color: var(--color-brand-700);
 }
 
+.site-navbar-inner {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 0.9rem;
+}
+
+.site-navbar-brand {
+    flex: 0 0 auto;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.site-navbar-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.site-navbar-link {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.75rem;
+    border-radius: var(--radius-control);
+    color: var(--color-muted);
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.site-navbar-link:hover,
+.site-navbar-link:focus-visible {
+    color: var(--color-ink);
+    background: var(--color-brand-50);
+}
+
+.site-navbar-link.is-active {
+    color: #fff;
+    background: var(--color-brand-600);
+}
+
 .text-muted-custom {
     color: var(--color-muted);
 }
@@ -200,6 +247,21 @@ body {
 }
 
 @media (max-width: 575.98px) {
+    .site-navbar-inner {
+        align-items: stretch;
+        gap: 0.9rem;
+        padding-block: 0.8rem;
+    }
+
+    .site-navbar-nav {
+        justify-content: flex-start;
+    }
+
+    .site-navbar-link,
+    .site-navbar-nav .btn {
+        flex: 1 1 auto;
+    }
+
     .appointment-steps {
         gap: 0.35rem;
     }
