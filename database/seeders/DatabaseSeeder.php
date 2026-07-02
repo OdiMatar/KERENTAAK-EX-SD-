@@ -199,8 +199,51 @@ class DatabaseSeeder extends Seeder
             $bestelling->updateTotaalprijs();
         }
 
+        foreach ($this->klanten() as $klant) {
+            DB::table('klanten')->updateOrInsert(
+                ['email' => $klant['email']],
+                [
+                    ...$klant,
+                    'is_actief' => true,
+                    'datum_aangemaakt' => now(),
+                    'datum_gewijzigd' => now(),
+                ],
+            );
+        }
+
         $this->loadAppointmentStoredProcedures();
         DB::statement('CALL sp_seed_appointment_basisdata()');
+        $this->seedAppointmentOverview();
+    }
+
+    /**
+     * @return array<int, array<string, string>>
+     */
+    private function klanten(): array
+    {
+        return [
+            [
+                'voornaam' => 'Lisa',
+                'achternaam' => 'Tiko',
+                'adres' => 'Kappersstraat 12, Rotterdam',
+                'telefoonnummer' => '0612345678',
+                'email' => 'lisa.tiko@example.com',
+            ],
+            [
+                'voornaam' => 'Sanne',
+                'achternaam' => 'Bakker',
+                'adres' => 'Salonplein 8, Den Haag',
+                'telefoonnummer' => '0687654321',
+                'email' => 'sanne.bakker@example.com',
+            ],
+            [
+                'voornaam' => 'Mila',
+                'achternaam' => 'Jansen',
+                'adres' => 'Kniplaan 3, Utrecht',
+                'telefoonnummer' => '0611223344',
+                'email' => 'mila.jansen@example.com',
+            ],
+        ];
     }
 
     private function loadAppointmentStoredProcedures(): void
@@ -226,6 +269,98 @@ class DatabaseSeeder extends Seeder
             if ($statement !== 'CALL sp_seed_appointment_basisdata()') {
                 DB::unprepared($statement);
             }
+        }
+    }
+
+    private function seedAppointmentOverview(): void
+    {
+        $customerUserId = User::query()
+            ->where('email', 'klant@kniplokettiko.nl')
+            ->value('id');
+
+        if (! $customerUserId) {
+            return;
+        }
+
+        $customerResult = DB::selectOne('CALL sp_ensure_customer_for_user(?)', [$customerUserId]);
+        $customerId = (int) $customerResult->customer_id;
+
+        $appointments = [
+            [
+                'employee_email' => 'yassin.attiah@kniplokettiko.nl',
+                'treatment_name' => 'Knippen',
+                'date' => now()->addDays(3)->toDateString(),
+                'start_time' => '10:00:00',
+                'end_time' => '10:45:00',
+            ],
+            [
+                'employee_email' => 'sara.bakker@kniplokettiko.nl',
+                'treatment_name' => 'Kleuren',
+                'date' => now()->addDays(5)->toDateString(),
+                'start_time' => '11:00:00',
+                'end_time' => '12:30:00',
+            ],
+            [
+                'employee_email' => 'mohammad.abdullah@kniplokettiko.nl',
+                'treatment_name' => 'Stylen',
+                'date' => now()->addDays(7)->toDateString(),
+                'start_time' => '13:00:00',
+                'end_time' => '13:30:00',
+            ],
+            [
+                'employee_email' => 'amina.elidrissi@kniplokettiko.nl',
+                'treatment_name' => 'Extensions',
+                'date' => now()->addDays(10)->toDateString(),
+                'start_time' => '14:00:00',
+                'end_time' => '16:00:00',
+            ],
+        ];
+
+        foreach ($appointments as $appointmentData) {
+            $employeeId = DB::table('medewerkers')
+                ->where('email', $appointmentData['employee_email'])
+                ->value('id');
+            $treatment = DB::table('behandelingen')
+                ->where('naam', $appointmentData['treatment_name'])
+                ->first();
+
+            if (! $employeeId || ! $treatment) {
+                continue;
+            }
+
+            $appointmentId = DB::table('afspraken')->updateOrInsert(
+                [
+                    'klant_id' => $customerId,
+                    'datum' => $appointmentData['date'],
+                    'starttijd' => $appointmentData['start_time'],
+                ],
+                [
+                    'medewerker_id' => $employeeId,
+                    'eindtijd' => $appointmentData['end_time'],
+                    'status' => 'Gepland',
+                    'is_actief' => true,
+                    'opmerking' => 'Voorbeeldafspraak voor het afsprakenoverzicht.',
+                    'datum_aangemaakt' => now(),
+                    'datum_gewijzigd' => now(),
+                ],
+            );
+
+            $appointmentId = DB::table('afspraken')
+                ->where('klant_id', $customerId)
+                ->where('datum', $appointmentData['date'])
+                ->where('starttijd', $appointmentData['start_time'])
+                ->value('id');
+
+            DB::table('afspraak_behandeling')->updateOrInsert(
+                [
+                    'afspraak_id' => $appointmentId,
+                    'behandeling_id' => $treatment->id,
+                ],
+                [
+                    'prijs_op_moment' => $treatment->prijs,
+                    'duur_op_moment' => $treatment->duur,
+                ],
+            );
         }
     }
 }
