@@ -1,0 +1,76 @@
+<mxfile host="Electron" agent="Codex">
+  <diagram id="afspraken-uml" name="Afspraken UML">
+    <mxGraphModel dx="1030" dy="626" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-5" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="AfspraakController" vertex="1">
+          <mxGeometry height="300" width="330" x="290" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-6" parent="34YzntQ1ctVy-RuJh_oc-5" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;- AfspraakModel: AfspraakModel&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;- AfspraakView: AfspraakView&lt;/span&gt;" vertex="1">
+          <mxGeometry height="84" width="330" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-7" parent="34YzntQ1ctVy-RuJh_oc-5" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry height="70" width="330" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-8" parent="34YzntQ1ctVy-RuJh_oc-5" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;+ index(): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ create(): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ store(AfspraaktData): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ edit(id): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ update(id, AfspraakData): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ destroy(id): void&lt;/span&gt;" vertex="1">
+          <mxGeometry height="120" width="330" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-13" edge="1" parent="1" source="34YzntQ1ctVy-RuJh_oc-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=2;exitX=0.444;exitY=0.001;exitDx=0;exitDy=0;exitPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="460" as="sourcePoint" />
+            <mxPoint x="425" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-14" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="AfspraakModel" vertex="1">
+          <mxGeometry height="270" width="330" x="70" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-15" parent="34YzntQ1ctVy-RuJh_oc-14" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;- db: Database&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="330" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-16" parent="34YzntQ1ctVy-RuJh_oc-14" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry height="70" width="330" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-17" parent="34YzntQ1ctVy-RuJh_oc-14" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;+ getAllAfspraak(): array&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ getAfspraakById(id): Product&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ createAfspraak(data): bool&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ updateAfspraak(id, data): bool&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ deleteAfspraak(id): bool&lt;/span&gt;" vertex="1">
+          <mxGeometry height="120" width="330" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-24" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="AfspraakView" vertex="1">
+          <mxGeometry height="270" width="330" x="470" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-25" parent="34YzntQ1ctVy-RuJh_oc-24" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;+ Afspraak: array&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ melding: string&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="330" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-26" parent="34YzntQ1ctVy-RuJh_oc-24" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry height="70" width="330" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-27" parent="34YzntQ1ctVy-RuJh_oc-24" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;+ toonAfspraakOverzicht(Afspraak): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ toonToevoegForm(categories, Afspraak): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ toonWijzigForm(Afpraak): void&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ toonMelding(Afspraak): void&lt;/span&gt;" vertex="1">
+          <mxGeometry height="120" width="330" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-28" edge="1" parent="1" source="34YzntQ1ctVy-RuJh_oc-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=2;exitX=0.424;exitY=0.004;exitDx=0;exitDy=0;entryX=0.465;entryY=1.007;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" target="34YzntQ1ctVy-RuJh_oc-8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="525" as="sourcePoint" />
+            <mxPoint x="550" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-29" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="Database" vertex="1">
+          <mxGeometry height="220" width="330" x="50" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-30" parent="34YzntQ1ctVy-RuJh_oc-29" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;- conn: PDO&lt;/span&gt;" vertex="1">
+          <mxGeometry height="34" width="330" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-31" parent="34YzntQ1ctVy-RuJh_oc-29" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry height="70" width="330" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-32" parent="34YzntQ1ctVy-RuJh_oc-29" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;+ connect(): PDO&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ query(sql, params): array&lt;/span&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;+ execute(sql, params): bool&lt;/span&gt;" vertex="1">
+          <mxGeometry height="90" width="330" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="34YzntQ1ctVy-RuJh_oc-33" edge="1" parent="1" source="34YzntQ1ctVy-RuJh_oc-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-20.000000000000085" y="1128.46" as="sourcePoint" />
+            <mxPoint x="221.91" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

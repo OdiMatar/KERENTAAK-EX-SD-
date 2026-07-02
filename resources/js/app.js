@@ -1,10 +1,28 @@
-import * as bootstrap from 'bootstrap';
-
-window.bootstrap = bootstrap;
-
 window.setTimeout(() => {
     document.querySelectorAll('.alert.auto-dismiss').forEach((element) => {
-        const alert = bootstrap.Alert.getOrCreateInstance(element);
-        alert.close();
+        element.remove();
     });
 }, 3000);
+
+document.querySelectorAll('[data-bs-dismiss="alert"]').forEach((button) => {
+    button.addEventListener('click', () => {
+        button.closest('.alert')?.remove();
+    });
+});
+
+document.querySelectorAll('[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+        }
+    });
+});
+
+document.querySelectorAll('[data-appointment-form]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            form.classList.add('was-validated');
+        }
+    });
+});

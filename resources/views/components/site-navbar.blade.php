@@ -22,6 +22,7 @@
                 <x-ui.button :variant="$secondaryVariant" href="{{ route('home') }}">Homepage</x-ui.button>
 
                 @auth
+                    <x-ui.button href="{{ route('appointments.index') }}">Afspraken</x-ui.button>
                     <x-ui.button href="{{ route('profile') }}">Profiel</x-ui.button>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
