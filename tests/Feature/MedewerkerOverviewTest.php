@@ -2,7 +2,6 @@
 
 use App\Models\Medewerker;
 use App\Models\User;
-use App\Models\Medewerker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
