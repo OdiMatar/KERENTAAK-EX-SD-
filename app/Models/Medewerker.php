@@ -56,16 +56,13 @@ class Medewerker extends Model
     protected static function booted(): void
     {
         static::saving(function (Medewerker $medewerker): void {
-            if (! $medewerker->voornaam && $medewerker->name) {
+            if ($medewerker->name && ($medewerker->isDirty('name') || ! $medewerker->voornaam)) {
                 $medewerker->voornaam = str($medewerker->name)->before(' ')->toString();
-            }
-
-            if (! $medewerker->achternaam && $medewerker->name) {
                 $achternaam = trim(str($medewerker->name)->after(' ')->toString());
                 $medewerker->achternaam = $achternaam !== '' ? $achternaam : '-';
             }
 
-            if (! $medewerker->telefoonnummer && $medewerker->phone) {
+            if ($medewerker->isDirty('phone') || (! $medewerker->telefoonnummer && $medewerker->phone)) {
                 $medewerker->telefoonnummer = $medewerker->phone;
             }
 

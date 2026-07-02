@@ -81,3 +81,41 @@ it('verbergt een verwijderde medewerker met afspraken uit het overzicht', functi
         ->assertDontSee('Yassin Attiah')
         ->assertDontSee('yassin-test@example.com');
 });
+
+it('wijzigt naam en telefoon van een medewerker zichtbaar in het overzicht', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $medewerker = Medewerker::query()->create([
+        'name' => 'Yassin Attiah',
+        'email' => 'yassin-update@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'phone' => '0612345678',
+    ]);
+
+    $this->actingAs($owner)
+        ->put(route('medewerkers.update', $medewerker), [
+            'name' => 'Yassin Jansen',
+            'email' => 'yassin-update@example.com',
+            'role' => Medewerker::ROLE_MANAGER,
+            'phone' => '0698765432',
+        ])
+        ->assertRedirect(route('medewerkers.index'))
+        ->assertSessionHas('status', 'De medewerker is succesvol gewijzigd.');
+
+    $this->assertDatabaseHas('medewerkers', [
+        'id' => $medewerker->id,
+        'name' => 'Yassin Jansen',
+        'voornaam' => 'Yassin',
+        'achternaam' => 'Jansen',
+        'phone' => '0698765432',
+        'telefoonnummer' => '0698765432',
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('medewerkers.index'))
+        ->assertOk()
+        ->assertSee('Yassin Jansen')
+        ->assertSee('0698765432');
+});

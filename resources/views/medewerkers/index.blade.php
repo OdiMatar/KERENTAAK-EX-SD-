@@ -37,10 +37,10 @@
                         <tbody>
                             @forelse ($medewerkers as $medewerker)
                                 <tr>
-                                    <td>{{ $medewerker->name }}</td>
-                                    <td>{{ $medewerker->role }}</td>
+                                    <td>{{ $medewerker->volledigeNaam() }}</td>
+                                    <td>{{ $medewerker->functie ?? $medewerker->role }}</td>
                                     <td>{{ $medewerker->email }}</td>
-                                    <td>{{ $medewerker->phone ?? '-' }}</td>
+                                    <td>{{ $medewerker->telefoonnummer ?? $medewerker->phone ?? '-' }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
                                             <a href="{{ route('medewerkers.edit', $medewerker) }}" class="btn btn-sm btn-outline-secondary">Wijzigen</a>
@@ -55,9 +55,7 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="text-muted">
-                                        @if ($selectedRole === App\Models\Medewerker::ROLE_VOLUNTEER)
-                                            Er zijn momenteel geen vrijwilligers bekend.
-                                        @elseif ($selectedRole === App\Models\Medewerker::ROLE_INTERN)
+                                        @if ($selectedRole === App\Models\Medewerker::ROLE_INTERN)
                                             Er zijn momenteel geen stagairs bekend.
                                         @else
                                             Er zijn momenteel geen medewerkers bekend.
