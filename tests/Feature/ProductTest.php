@@ -54,7 +54,7 @@ it('toont een melding als er geen producten beschikbaar zijn', function (): void
         ->assertSee('Er zijn geen producten beschikbaar.');
 });
 
-it('voegt een nieuw product toe via de stored procedure', function (): void {
+it('voegt een nieuw product toe', function (): void {
     $this->actingAs(productUser())
         ->post(route('products.store'), productPayload())
         ->assertRedirect(route('products.index'))
@@ -76,7 +76,7 @@ it('toont een foutmelding als het product al bestaat', function (): void {
         ->assertSessionHas('error', 'Product is niet toegevoegd.');
 });
 
-it('wijzigt productgegevens via de stored procedure', function (): void {
+it('wijzigt productgegevens', function (): void {
     $productId = DB::table('products')->where('barcode', '871000000001')->value('id');
 
     $this->actingAs(productUser())
@@ -111,7 +111,7 @@ it('toont een foutmelding als er geen nieuwe gegevens zijn ingevuld', function (
         ->assertSessionHas('error', 'Product is niet gewijzigd.');
 });
 
-it('verwijdert een product via de stored procedure', function (): void {
+it('verwijdert een product', function (): void {
     $productId = DB::table('products')->where('barcode', '871000000001')->value('id');
 
     $this->actingAs(productUser())
