@@ -18,6 +18,9 @@
 
                     <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
                         @auth
+                            @unless (auth()->user()->isCustomer())
+                                <x-ui.button href="{{ route('medewerkers.index') }}" size="lg">Overzicht medewerkers</x-ui.button>
+                            @endunless
                             <x-ui.button href="{{ route('profile') }}" size="lg">Naar profiel</x-ui.button>
                         @else
                             <x-ui.button href="{{ route('register') }}" size="lg">Afspraak starten</x-ui.button>
@@ -123,7 +126,7 @@
                 </div>
 
                 <div class="col-lg-5">
-                    <x-ui.card title="Bestellingen" description="Orderdatum, verwachte leverdatum en status blijven inzichtelijk voor medewerker en klant.">
+                    <x-ui.card title="Bestellingen" description="Besteldatum, verwachte leverdatum en status blijven inzichtelijk voor medewerker en klant.">
                         <ul class="text-muted small mb-0">
                             <li>Online bestellen door klanten</li>
                             <li>Afhalen en betalen in de salon</li>

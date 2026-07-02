@@ -19,6 +19,12 @@
             <a href="{{ route('home') }}" class="{{ $brandClass }}">Kniploket Tiko</a>
 
             <nav class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
+                @auth
+                    @unless (auth()->user()->isCustomer())
+                        <x-ui.button :variant="$secondaryVariant" href="{{ route('medewerkers.index') }}">Overzicht medewerkers</x-ui.button>
+                    @endunless
+                @endauth
+
                 <x-ui.button :variant="$secondaryVariant" href="{{ route('home') }}">Homepage</x-ui.button>
 
                 @auth

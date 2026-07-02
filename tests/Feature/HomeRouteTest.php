@@ -35,7 +35,7 @@ it('toont de profielpagina voor ingelogde gebruikers', function (): void {
         ->get(route('profile'))
         ->assertOk()
         ->assertSee('Profiel')
-        ->assertSee($user->name)
+        ->assertSee(e($user->name), false)
         ->assertSee($user->email);
 });
 
