@@ -19,7 +19,7 @@ class BestellingController extends Controller
         $bestellingen = Bestelling::query()
             ->where('is_actief', true)
             ->latest('orderdatum')
-            ->get();
+            ->paginate(4);
 
         return view('bestellingen.index', ['bestellingen' => $bestellingen]);
     }

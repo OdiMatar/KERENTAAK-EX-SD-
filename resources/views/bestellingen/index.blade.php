@@ -56,6 +56,11 @@
                             </tbody>
                         </table>
                     </div>
+                    @if ($bestellingen->hasPages())
+                        <div class="mt-3">
+                            {{ $bestellingen->links() }}
+                        </div>
+                    @endif
                 @endif
             </x-ui.card>
         </x-ui.section>
