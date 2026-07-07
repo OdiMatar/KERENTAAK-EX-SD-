@@ -29,4 +29,11 @@ class StoreMedewerkerRequest extends FormRequest
             'phone.digits' => 'Het telefoonnummer moet uit 10 cijfers bestaan',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'Dit e-mailadres is al in gebruik',
+        ];
+    }
 }
