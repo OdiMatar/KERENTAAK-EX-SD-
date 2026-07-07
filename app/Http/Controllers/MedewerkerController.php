@@ -23,23 +23,17 @@ class MedewerkerController extends Controller
         $this->ensureNotCustomer($request);
         $roles = Medewerker::roles();
         $selectedRole = $request->query('role', '');
-        $highlightedMedewerkerId = session('highlighted_medewerker_id');
 
         $medewerkers = Medewerker::query()
-            ->where('is_actief', true)
+            ->where('is_active', true)
             ->when(
                 $selectedRole !== '' && array_key_exists($selectedRole, $roles),
-                fn ($query) => $query->where('functie', $roles[$selectedRole])
+                fn ($query) => $query->where('role', $selectedRole)
             )
-            ->when(
-                $highlightedMedewerkerId,
-                fn ($query) => $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$highlightedMedewerkerId])
-            )
-            ->orderBy('voornaam', 'asc')
-            ->orderBy('achternaam', 'asc')
+            ->orderBy('name', 'asc')
             ->get();
 
-        return view('medewerkers.index', compact('medewerkers', 'roles', 'selectedRole', 'highlightedMedewerkerId'));
+        return view('medewerkers.index', compact('medewerkers', 'roles', 'selectedRole'));
     }
 
     public function create(Request $request): View
@@ -55,7 +49,7 @@ class MedewerkerController extends Controller
     {
         $this->ensureNotCustomer($request);
 
-        $medewerker = Medewerker::create($this->medewerkerData($request->validated()));
+        $medewerker = Medewerker::create($request->validated());
 
         return redirect()
             ->route('medewerkers.index')
@@ -76,7 +70,7 @@ class MedewerkerController extends Controller
     public function update(UpdateMedewerkerRequest $request, Medewerker $medewerker): RedirectResponse
     {
         $this->ensureNotCustomer($request);
-        $medewerker->update($this->medewerkerData($request->validated()));
+        $medewerker->update($request->validated());
 
         return redirect()
             ->route('medewerkers.index')
@@ -90,6 +84,7 @@ class MedewerkerController extends Controller
 
         if ($medewerker->afspraken()->exists()) {
             $medewerker->update([
+                'is_active' => false,
                 'is_actief' => false,
             ]);
 
@@ -99,24 +94,5 @@ class MedewerkerController extends Controller
         $medewerker->delete();
 
         return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
-    }
-
-    /**
-     * @param  array{name: string, email: string, role: string, phone?: string|null}  $data
-     * @return array{voornaam: string, achternaam: string, email: string, functie: string, telefoonnummer: string|null, is_actief: bool}
-     */
-    private function medewerkerData(array $data): array
-    {
-        $nameParts = preg_split('/\s+/', trim($data['name']), 2);
-        $roles = Medewerker::roles();
-
-        return [
-            'voornaam' => $nameParts[0],
-            'achternaam' => $nameParts[1] ?? '-',
-            'email' => $data['email'],
-            'functie' => $roles[$data['role']],
-            'telefoonnummer' => $data['phone'] ?? null,
-            'is_actief' => true,
-        ];
     }
 }
