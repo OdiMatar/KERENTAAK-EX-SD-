@@ -95,16 +95,14 @@ class MedewerkerController extends Controller
     {
         $this->ensureNotCustomer($request);
 
-        if ($medewerker->afspraken()->exists()) {
-            $medewerker->update([
-                'is_active' => false,
-                'is_actief' => false,
-            ]);
-
-            return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
+        if ($medewerker->is_active !== null && ! (bool) $medewerker->is_active) {
+            return redirect()->route('medewerkers.index')->with('status', 'Deze medewerker is al verwijderd');
         }
 
-        $medewerker->delete();
+        $medewerker->update([
+            'is_active' => false,
+            'is_actief' => false,
+        ]);
 
         return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
     }
