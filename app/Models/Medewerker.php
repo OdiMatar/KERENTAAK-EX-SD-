@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 
 class Medewerker extends Model
 {
+    public const CREATED_AT = 'datum_aangemaakt';
+
+    public const UPDATED_AT = 'datum_gewijzigd';
+
     public const ROLE_MANAGER = 'manager';
 
     public const ROLE_EMPLOYEE = 'medewerker';
@@ -30,6 +35,11 @@ class Medewerker extends Model
     ];
 
     /**
+     * @var array<string, bool>
+     */
+    private static array $columnCache = [];
+
+    /**
      * @return array<string, string>
      */
     public static function roles(): array
@@ -50,29 +60,82 @@ class Medewerker extends Model
     {
         $fullName = trim(($this->voornaam ?? '').' '.($this->achternaam ?? ''));
 
-        return $fullName !== '' ? $fullName : $this->name;
+        return $fullName !== '' ? $fullName : '';
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->volledigeNaam();
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->telefoonnummer;
+    }
+
+    public function getRoleAttribute(): string
+    {
+        $functie = strtolower((string) $this->functie);
+
+        return match ($functie) {
+            self::ROLE_MANAGER => self::ROLE_MANAGER,
+            self::ROLE_INTERN => self::ROLE_INTERN,
+            default => self::ROLE_EMPLOYEE,
+        };
+    }
+
+    public function setNameAttribute(?string $value): void
+    {
+        $name = trim((string) $value);
+
+        if (self::hasColumn('name')) {
+            $this->attributes['name'] = $name;
+        }
+
+        if ($name !== '') {
+            $this->attributes['voornaam'] = str($name)->before(' ')->toString();
+            $achternaam = trim(str($name)->after(' ')->toString());
+            $this->attributes['achternaam'] = $achternaam !== '' ? $achternaam : '-';
+        }
+    }
+
+    public function setPhoneAttribute(?string $value): void
+    {
+        if (self::hasColumn('phone')) {
+            $this->attributes['phone'] = $value;
+        }
+
+        $this->attributes['telefoonnummer'] = $value;
+    }
+
+    public function setRoleAttribute(?string $value): void
+    {
+        if (self::hasColumn('role')) {
+            $this->attributes['role'] = $value;
+        }
+
+        $roles = self::roles();
+        $this->attributes['functie'] = $roles[$value] ?? $roles[self::ROLE_EMPLOYEE];
+    }
+
+    public function setIsActiveAttribute(bool $value): void
+    {
+        if (self::hasColumn('is_active')) {
+            $this->attributes['is_active'] = $value;
+        }
+
+        $this->attributes['is_actief'] = $value;
+    }
+
+    private static function hasColumn(string $column): bool
+    {
+        return self::$columnCache[$column] ??= Schema::hasColumn('medewerkers', $column);
     }
 
     protected static function booted(): void
     {
         static::saving(function (Medewerker $medewerker): void {
-            if ($medewerker->name && ($medewerker->isDirty('name') || ! $medewerker->voornaam)) {
-                $medewerker->voornaam = str($medewerker->name)->before(' ')->toString();
-                $achternaam = trim(str($medewerker->name)->after(' ')->toString());
-                $medewerker->achternaam = $achternaam !== '' ? $achternaam : '-';
-            }
-
-            if ($medewerker->isDirty('phone') || (! $medewerker->telefoonnummer && $medewerker->phone)) {
-                $medewerker->telefoonnummer = $medewerker->phone;
-            }
-
-            if (! $medewerker->functie && $medewerker->role) {
-                $medewerker->functie = ucfirst($medewerker->role);
-            }
-
-            $medewerker->is_actief = (bool) $medewerker->is_active;
-            $medewerker->datum_aangemaakt ??= now();
-            $medewerker->datum_gewijzigd = now();
+            $medewerker->is_actief ??= true;
         });
     }
 }

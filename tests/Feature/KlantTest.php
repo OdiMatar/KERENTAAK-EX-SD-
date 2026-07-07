@@ -16,9 +16,10 @@ function klantPayload(array $overrides = []): array
 {
     return [
         'naam' => 'Lisa Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
+        'is_actief' => '1',
         ...$overrides,
     ];
 }
@@ -27,14 +28,14 @@ it('toont en filtert klanten op naam', function (): void {
     Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
     ]);
     Klant::query()->create([
         'voornaam' => 'Mila',
         'achternaam' => 'Jansen',
-        'adres' => 'Voorbeeldlaan 2',
+        'adres' => 'Voorbeeldlaan 2, 2345 CD Utrecht',
         'telefoonnummer' => '0687654321',
         'email' => 'mila@example.com',
     ]);
@@ -58,9 +59,10 @@ it('toont een melding als de zoekopdracht geen klanten vindt', function (): void
     Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
+        'is_actief' => false,
     ]);
 
     $this->actingAs(klantBeheerder())
@@ -79,9 +81,43 @@ it('voegt een nieuwe klant toe', function (): void {
     $this->assertDatabaseHas('klanten', [
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
+        'is_actief' => true,
+    ]);
+});
+
+it('weigert een klantadres zonder postcode of stad', function (): void {
+    $this->actingAs(klantBeheerder())
+        ->post(route('klanten.store'), klantPayload(['adres' => 'Teststraat 1']))
+        ->assertSessionHasErrors([
+            'adres' => 'Straatnaam, huisnummer, postcode en stad zijn verplicht om te vullen.',
+        ]);
+
+    $this->assertDatabaseMissing('klanten', [
+        'voornaam' => 'Lisa',
+        'adres' => 'Teststraat 1',
+    ]);
+});
+
+it('blokkeert verwijderen zolang een klant actief is', function (): void {
+    $klant = Klant::query()->create([
+        'voornaam' => 'Lisa',
+        'achternaam' => 'Tiko',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
+        'telefoonnummer' => '0612345678',
+        'email' => 'actief@example.com',
+        'is_actief' => true,
+    ]);
+
+    $this->actingAs(klantBeheerder(User::ROLE_OWNER))
+        ->delete(route('klanten.destroy', $klant))
+        ->assertRedirect()
+        ->assertSessionHas('error', 'Deze klant is nog actief. Zet de klant eerst op inactief voordat je deze verwijdert.');
+
+    $this->assertDatabaseHas('klanten', [
+        'id' => $klant->id,
     ]);
 });
 
@@ -100,7 +136,7 @@ it('wijzigt een bestaande klant', function (): void {
     $klant = Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
     ]);
@@ -120,7 +156,7 @@ it('toont een melding als er niks is gewijzigd', function (): void {
     $klant = Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
     ]);
@@ -140,14 +176,14 @@ it('weigert een klant met hetzelfde adres en e-mailadres', function (): void {
     Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Dubbelstraat 10',
+        'adres' => 'Dubbelstraat 10, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'dubbel@example.com',
     ]);
 
     $this->actingAs(klantBeheerder())
         ->post(route('klanten.store'), klantPayload([
-            'adres' => 'Dubbelstraat 10',
+            'adres' => 'Dubbelstraat 10, 1234 AB Rotterdam',
             'email' => 'dubbel@example.com',
         ]))
         ->assertSessionHas('error', 'Er bestaat al een klant met dit adres en e-mailadres');
@@ -157,7 +193,7 @@ it('weigert wijzigingen als naam leeg is', function (): void {
     $klant = Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
     ]);
@@ -171,9 +207,10 @@ it('verwijdert een klant definitief', function (): void {
     $klant = Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa@tiko.nl',
+        'is_actief' => false,
     ]);
 
     $this->actingAs(klantBeheerder(User::ROLE_OWNER))
@@ -190,9 +227,10 @@ it('blokkeert verwijderen als een klant een afspraak heeft', function (): void {
     $klant = Klant::query()->create([
         'voornaam' => 'Lisa',
         'achternaam' => 'Tiko',
-        'adres' => 'Teststraat 1, Rotterdam',
+        'adres' => 'Teststraat 1, 1234 AB Rotterdam',
         'telefoonnummer' => '0612345678',
         'email' => 'lisa-afspraak@tiko.nl',
+        'is_actief' => false,
     ]);
     $medewerkerId = DB::table('medewerkers')->insertGetId([
         'name' => 'Noor Smit',

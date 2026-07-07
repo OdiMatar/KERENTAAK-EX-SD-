@@ -69,6 +69,7 @@ document.querySelectorAll('[data-klant-form]').forEach((form) => {
         email: form.querySelector('[name="email"]'),
     };
     const existingCustomers = JSON.parse(form.dataset.existingCustomers || '[]');
+    const formAlert = form.querySelector('[data-klant-form-alert]');
 
     const setError = (field, message) => {
         const wrapper = field.closest('div');
@@ -93,6 +94,7 @@ document.querySelectorAll('[data-klant-form]').forEach((form) => {
         let valid = true;
 
         Object.values(fields).forEach(clearError);
+        formAlert?.classList.add('d-none');
 
         if (!fields.naam.value.trim()) {
             setError(fields.naam, 'Naam is een verplicht veld en mag niet leeg zijn');
@@ -127,14 +129,50 @@ document.querySelectorAll('[data-klant-form]').forEach((form) => {
         return valid;
     };
 
+    const hasCompleteAddress = (value) => {
+        const postcodePattern = /\b[1-9][0-9]{3}\s?[a-z]{2}\b/i;
+        const addressWithoutPostcode = value.replace(postcodePattern, '');
+        const hasPostcode = postcodePattern.test(value);
+        const hasHouseNumber = /\b[0-9]+[a-z]?\b/i.test(addressWithoutPostcode);
+        const hasStreet = /[a-zÀ-ÿ]{2,}.*\b[0-9]+[a-z]?\b/i.test(addressWithoutPostcode);
+        const hasCity = /\b[1-9][0-9]{3}\s?[a-z]{2}\b[\s,]+[a-zÀ-ÿ][a-zÀ-ÿ\s-]{1,}$/i.test(value);
+
+        return hasStreet && hasHouseNumber && hasPostcode && hasCity;
+    };
+
+    const hasRequiredAddressParts = (value) => {
+        const postcodePattern = /\b[1-9][0-9]{3}\s?[a-z]{2}\b/i;
+        const addressWithoutPostcode = value.replace(postcodePattern, '');
+        const hasPostcode = postcodePattern.test(value);
+        const hasHouseNumber = /\b[0-9]+[a-z]?\b/i.test(addressWithoutPostcode);
+        const hasStreet = /[^\d\s,][^\d,]*\b[0-9]+[a-z]?\b/i.test(addressWithoutPostcode);
+        const hasCity = /\b[1-9][0-9]{3}\s?[a-z]{2}\b[\s,]+[^\d,]{2,}$/i.test(value);
+
+        return hasStreet && hasHouseNumber && hasPostcode && hasCity;
+    };
+
     form.addEventListener('submit', (event) => {
-        if (!validate()) {
+        const valid = validate();
+
+        if (fields.adres.value.trim() && !hasRequiredAddressParts(fields.adres.value.trim())) {
+            setError(fields.adres, 'Straatnaam, huisnummer, postcode en stad zijn verplicht om te vullen.');
+        }
+
+        if (!valid || fields.adres.classList.contains('is-invalid')) {
             event.preventDefault();
+            formAlert?.classList.remove('d-none');
+            formAlert?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     });
 
     Object.values(fields).forEach((field) => {
-        field.addEventListener('input', () => clearError(field));
+        field.addEventListener('input', () => {
+            clearError(field);
+
+            if (!form.querySelector('.is-invalid')) {
+                formAlert?.classList.add('d-none');
+            }
+        });
     });
 });
 
