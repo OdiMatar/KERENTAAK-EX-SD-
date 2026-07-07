@@ -19,7 +19,14 @@ class UpdateMedewerkerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:medewerkers,email,'.$this->route('medewerker')->id],
             'role' => ['required', 'string', 'max:50', Rule::in(array_keys(Medewerker::roles()))],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'digits:10'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'phone.digits' => 'Het telefoonnummer moet uit 10 cijfers bestaan',
         ];
     }
 }

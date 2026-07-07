@@ -121,6 +121,43 @@ it('wijzigt naam en telefoon van een medewerker zichtbaar in het overzicht', fun
         ->assertSee('0698765432');
 });
 
+it('valideert dat een telefoonnummer bij toevoegen uit 10 cijfers bestaat', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $this->actingAs($owner)
+        ->post(route('medewerkers.store'), [
+            'name' => 'Nora Peters',
+            'email' => 'nora-kort-telefoonnummer@example.com',
+            'role' => Medewerker::ROLE_EMPLOYEE,
+            'phone' => '06123',
+        ])
+        ->assertSessionHasErrors(['phone' => 'Het telefoonnummer moet uit 10 cijfers bestaan']);
+});
+
+it('valideert dat een telefoonnummer bij wijzigen uit 10 cijfers bestaat', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $medewerker = Medewerker::query()->create([
+        'name' => 'Yassin Attiah',
+        'email' => 'yassin-kort-telefoonnummer@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'phone' => '0612345678',
+    ]);
+
+    $this->actingAs($owner)
+        ->put(route('medewerkers.update', $medewerker), [
+            'name' => 'Yassin Attiah',
+            'email' => 'yassin-kort-telefoonnummer@example.com',
+            'role' => Medewerker::ROLE_EMPLOYEE,
+            'phone' => '06123',
+        ])
+        ->assertSessionHasErrors(['phone' => 'Het telefoonnummer moet uit 10 cijfers bestaan']);
+});
+
 it('licht een toegevoegde medewerker uit in het overzicht', function () {
     $owner = User::factory()->create([
         'role' => User::ROLE_OWNER,
