@@ -82,6 +82,29 @@ it('verbergt een verwijderde medewerker met afspraken uit het overzicht', functi
         ->assertDontSee('yassin-test@example.com');
 });
 
+it('toont een melding als een medewerker al verwijderd is', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $medewerker = Medewerker::query()->create([
+        'name' => 'Yassin Attiah',
+        'email' => 'yassin-al-verwijderd@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'phone' => '0612345678',
+    ]);
+
+    $this->actingAs($owner)
+        ->delete(route('medewerkers.destroy', $medewerker))
+        ->assertRedirect(route('medewerkers.index'))
+        ->assertSessionHas('status', 'De medewerker is succesvol verwijderd.');
+
+    $this->actingAs($owner)
+        ->delete(route('medewerkers.destroy', $medewerker))
+        ->assertRedirect(route('medewerkers.index'))
+        ->assertSessionHas('status', 'Deze medewerker is al verwijderd');
+});
+
 it('wijzigt naam en telefoon van een medewerker zichtbaar in het overzicht', function () {
     $owner = User::factory()->create([
         'role' => User::ROLE_OWNER,
