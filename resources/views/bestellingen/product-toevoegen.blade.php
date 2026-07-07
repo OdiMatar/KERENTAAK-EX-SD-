@@ -16,8 +16,9 @@
                     <div class="col-md-6">
                         <label for="categorie" class="form-label fw-medium">Categorie</label>
                         <select id="categorie" name="categorie" class="form-select">
+                            <option value="">Kies een categorie</option>
                             @foreach (['shampoo', 'conditioner', 'styling', 'verf', 'overig'] as $categorie)
-                                <option value="{{ $categorie }}" @selected(old('categorie', 'shampoo') === $categorie)>{{ ucfirst($categorie) }}</option>
+                                <option value="{{ $categorie }}" @selected(old('categorie') === $categorie)>{{ ucfirst($categorie) }}</option>
                             @endforeach
                         </select>
                         @error('categorie')
@@ -34,7 +35,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <x-ui.input label="Voorraad" name="voorraad" type="number" min="0" value="{{ old('voorraad', 0) }}" :error="$errors->first('voorraad')" />
+                        <x-ui.input label="Voorraad" name="voorraad" type="number" min="0" value="{{ old('voorraad') }}" :error="$errors->first('voorraad')" />
                     </div>
 
                     <div class="col-12">

@@ -27,7 +27,18 @@
                     </div>
 
                     <div class="col-md-4">
-                        <x-ui.input label="EAN-code" name="ean_code" value="{{ old('ean_code', $product->ean_code) }}" :error="$errors->first('ean_code')" />
+                        <label for="ean_code_weergave" class="form-label fw-medium">EAN-code</label>
+                        <input
+                            id="ean_code_weergave"
+                            type="text"
+                            class="form-control"
+                            value="{{ $product->ean_code }}"
+                            disabled
+                            readonly
+                            aria-readonly="true"
+                            aria-disabled="true"
+                            tabindex="-1"
+                        >
                     </div>
 
                     <div class="col-md-4">
