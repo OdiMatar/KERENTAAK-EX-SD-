@@ -56,6 +56,33 @@
                             </tbody>
                         </table>
                     </div>
+                    @if ($bestellingen->hasPages())
+                        <nav class="mt-3" aria-label="Paginering bestellingen">
+                            <ul class="pagination pagination-sm justify-content-center mb-0">
+                                <li class="page-item @if ($bestellingen->onFirstPage()) disabled @endif">
+                                    <a
+                                        class="page-link"
+                                        href="{{ $bestellingen->onFirstPage() ? '#' : $bestellingen->previousPageUrl() }}"
+                                        aria-label="Vorige pagina"
+                                    >&lsaquo;</a>
+                                </li>
+
+                                @for ($pagina = 1; $pagina <= $bestellingen->lastPage(); $pagina++)
+                                    <li class="page-item @if ($pagina === $bestellingen->currentPage()) active @endif">
+                                        <a class="page-link" href="{{ $bestellingen->url($pagina) }}">{{ $pagina }}</a>
+                                    </li>
+                                @endfor
+
+                                <li class="page-item @if (! $bestellingen->hasMorePages()) disabled @endif">
+                                    <a
+                                        class="page-link"
+                                        href="{{ $bestellingen->hasMorePages() ? $bestellingen->nextPageUrl() : '#' }}"
+                                        aria-label="Volgende pagina"
+                                    >&rsaquo;</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    @endif
                 @endif
             </x-ui.card>
         </x-ui.section>
