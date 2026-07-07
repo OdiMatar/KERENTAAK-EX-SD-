@@ -266,6 +266,62 @@ body {
     min-width: 6rem;
 }
 
+.klanten-overview {
+    display: grid;
+    gap: 1rem;
+}
+
+.klanten-toolbar,
+.klanten-table-panel {
+    border: 1px solid rgb(231 222 208 / 0.75);
+    border-radius: 0.5rem;
+    background: #fff;
+    box-shadow: 0 14px 34px -30px rgb(31 36 32 / 0.42);
+}
+
+.klanten-toolbar {
+    padding: 1rem 1.25rem;
+}
+
+.klanten-search {
+    max-width: 28rem;
+}
+
+.klanten-search .form-control {
+    min-height: 2.35rem;
+    padding-block: 0.45rem;
+}
+
+.klanten-table-panel {
+    padding: 0.75rem 1.25rem;
+}
+
+.klanten-table {
+    min-width: 58rem;
+}
+
+.klanten-table thead th {
+    padding-block: 0.85rem;
+    border-bottom: 1px solid #d8ddd9;
+    color: var(--color-ink);
+    font-size: 0.92rem;
+    white-space: nowrap;
+}
+
+.klanten-table tbody td {
+    padding-block: 0.75rem;
+    border-color: #edf0ed;
+}
+
+.klanten-table tbody tr:hover > * {
+    background: var(--color-brand-50);
+}
+
+.klanten-table td:last-child,
+.klanten-table th:last-child {
+    width: 16rem;
+}
+
 .klant-delete-modal {
     position: fixed;
     inset: 0;
@@ -319,5 +375,14 @@ body {
 
     .appointment-option .btn {
         width: 100%;
+    }
+
+    .klanten-search {
+        max-width: none;
+    }
+
+    .klanten-toolbar,
+    .klanten-table-panel {
+        padding-inline: 1rem;
     }
 }

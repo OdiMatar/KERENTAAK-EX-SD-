@@ -8,9 +8,9 @@
             <a href="{{ route('klanten.create') }}" class="btn btn-primary">Klant Toevoegen</a>
         </div>
 
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <form method="GET" action="{{ route('klanten.index') }}" class="mb-3">
+        <div class="klanten-overview">
+            <section class="klanten-toolbar">
+                <form method="GET" action="{{ route('klanten.index') }}" class="klanten-search">
                     <label for="zoekterm" class="form-label fw-semibold">Zoeken op naam</label>
                     <input
                         id="zoekterm"
@@ -23,20 +23,25 @@
                         data-klant-search
                     >
                 </form>
+            </section>
 
-                @if ($klanten->isEmpty() && $zoekterm !== '')
+            @if ($klanten->isEmpty() && $zoekterm !== '')
+                <section class="klanten-table-panel">
                     <div class="text-center text-muted py-5">
                         Geen klanten gevonden die voldoen aan deze zoekterm
                     </div>
-                @else
+                </section>
+            @else
+                <section class="klanten-table-panel">
                     <div class="table-responsive" data-klant-table>
-                        <table class="table align-middle mb-0">
+                        <table class="table klanten-table align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>Naam</th>
+                                    <th>Naam A-Z</th>
                                     <th>Adres</th>
                                     <th>Telefoonnummer</th>
                                     <th>E-mailadres</th>
+                                    <th>Status</th>
                                     <th>Acties</th>
                                 </tr>
                             </thead>
@@ -47,6 +52,13 @@
                                         <td>{{ $klant->adres ?? '-' }}</td>
                                         <td>{{ $klant->telefoonnummer ?? '-' }}</td>
                                         <td>{{ $klant->email ?? '-' }}</td>
+                                        <td>
+                                            @if ((bool) $klant->is_actief)
+                                                <span class="badge text-bg-success">Actief</span>
+                                            @else
+                                                <span class="badge text-bg-secondary">Inactief</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <div class="d-flex flex-wrap gap-2">
                                                 <a href="{{ route('klanten.show', $klant->id) }}" class="btn btn-sm btn-outline-primary">Details</a>
@@ -65,7 +77,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-muted">Er zijn momenteel geen klanten bekend.</td>
+                                        <td colspan="6" class="text-muted">Er zijn momenteel geen klanten bekend.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -75,8 +87,8 @@
                     <div class="text-center text-muted py-5 d-none" data-klant-empty>
                         Geen klanten gevonden die voldoen aan deze zoekterm
                     </div>
-                @endif
-            </div>
+                </section>
+            @endif
         </div>
 
         <div class="klant-delete-modal d-none" data-delete-modal aria-hidden="true">
