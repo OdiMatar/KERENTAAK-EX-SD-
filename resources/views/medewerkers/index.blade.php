@@ -55,7 +55,9 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="text-muted">
-                                        @if ($selectedRole === App\Models\Medewerker::ROLE_INTERN)
+                                        @if ($selectedRole === App\Models\Medewerker::ROLE_MANAGER)
+                                            Er zijn geen managers bekend
+                                        @elseif ($selectedRole === App\Models\Medewerker::ROLE_INTERN)
                                             Er zijn momenteel geen stagairs bekend.
                                         @else
                                             Er zijn momenteel geen medewerkers bekend.

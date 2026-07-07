@@ -32,6 +32,26 @@ it('shows the employee overview for authenticated users', function () {
         ->assertSee('0612345678');
 });
 
+it('toont een specifieke melding als er geen managers bekend zijn', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    Medewerker::query()->create([
+        'name' => 'Mila de Vries',
+        'email' => 'mila-geen-manager@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'functie' => 'Medewerker',
+        'phone' => '0612345678',
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('medewerkers.index', ['role' => Medewerker::ROLE_MANAGER]))
+        ->assertOk()
+        ->assertSee('Er zijn geen managers bekend')
+        ->assertDontSee('Er zijn momenteel geen medewerkers bekend.');
+});
+
 it('verbergt een verwijderde medewerker met afspraken uit het overzicht', function () {
     $owner = User::factory()->create([
         'role' => User::ROLE_OWNER,
