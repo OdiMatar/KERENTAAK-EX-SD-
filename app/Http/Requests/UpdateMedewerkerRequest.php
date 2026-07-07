@@ -22,4 +22,11 @@ class UpdateMedewerkerRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'Dit e-mailadres is al in gebruik',
+        ];
+    }
 }

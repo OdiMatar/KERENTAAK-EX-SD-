@@ -142,6 +142,28 @@ it('licht een toegevoegde medewerker uit in het overzicht', function () {
         ->assertSee('medewerker-highlight', false);
 });
 
+it('toont een duidelijke melding als een medewerker e-mailadres al bestaat', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    Medewerker::query()->create([
+        'name' => 'Mila de Vries',
+        'email' => 'mila-dubbel@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'phone' => '0612345678',
+    ]);
+
+    $this->actingAs($owner)
+        ->post(route('medewerkers.store'), [
+            'name' => 'Nora Peters',
+            'email' => 'mila-dubbel@example.com',
+            'role' => Medewerker::ROLE_EMPLOYEE,
+            'phone' => '0610101010',
+        ])
+        ->assertSessionHasErrors(['email' => 'Dit e-mailadres is al in gebruik']);
+});
+
 it('licht een gewijzigde medewerker uit in het overzicht', function () {
     $owner = User::factory()->create([
         'role' => User::ROLE_OWNER,
