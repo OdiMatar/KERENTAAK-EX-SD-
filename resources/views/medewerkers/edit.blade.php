@@ -14,24 +14,42 @@
                     @method('PUT')
 
                     <div class="col-md-6">
-                        <label class="form-label">Naam</label>
-                        <input type="text" name="name" class="form-control" value="{{ old('name', $medewerker->volledigeNaam()) }}" required>
+                        <x-ui.input
+                            label="Naam"
+                            name="name"
+                            value="{{ old('name', $medewerker->volledigeNaam()) }}"
+                            :error="$errors->first('name')"
+                            required
+                        />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">E-mail</label>
-                        <input type="email" name="email" class="form-control" value="{{ old('email', $medewerker->email) }}" required>
+                        <x-ui.input
+                            label="E-mail"
+                            name="email"
+                            type="email"
+                            value="{{ old('email', $medewerker->email) }}"
+                            :error="$errors->first('email')"
+                            required
+                        />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Functie</label>
-                        <select name="role" class="form-select" required>
+                        <label for="role" class="form-label">Functie</label>
+                        <select id="role" name="role" class="form-select" required>
                             @foreach ($roles as $value => $label)
                                 <option value="{{ $value }}" {{ old('role', $medewerker->role) === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
+                        @if ($errors->first('role'))
+                            <div class="form-text text-danger">{{ $errors->first('role') }}</div>
+                        @endif
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Telefoon</label>
-                        <input type="text" name="phone" class="form-control" value="{{ old('phone', $medewerker->telefoonnummer ?? $medewerker->phone) }}">
+                        <x-ui.input
+                            label="Telefoon"
+                            name="phone"
+                            value="{{ old('phone', $medewerker->telefoonnummer ?? $medewerker->phone) }}"
+                            :error="$errors->first('phone')"
+                        />
                     </div>
 
                     <div class="col-12 d-flex gap-2">

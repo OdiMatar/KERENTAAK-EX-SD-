@@ -45,6 +45,8 @@
                             <span>
                                 @if (request()->routeIs('klanten.create', 'klanten.edit'))
                                     De gegevens van deze klant zijn niet bijgewerkt.
+                                @elseif (request()->routeIs('medewerkers.create', 'medewerkers.edit'))
+                                    De gegevens van deze medewerker zijn niet bijgewerkt. Controleer de gemarkeerde velden.
                                 @else
                                     Controleer de ingevulde gegevens.
                                 @endif

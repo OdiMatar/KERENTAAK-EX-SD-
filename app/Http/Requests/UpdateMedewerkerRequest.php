@@ -26,8 +26,17 @@ class UpdateMedewerkerRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'phone.digits' => 'Het telefoonnummer moet uit 10 cijfers bestaan',
+            'name.required' => 'Vul de naam van de medewerker in',
+            'name.string' => 'De naam van de medewerker moet tekst zijn',
+            'name.max' => 'De naam van de medewerker mag maximaal 255 tekens bevatten',
+            'email.required' => 'Vul het e-mailadres van de medewerker in',
+            'email.email' => 'Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl',
+            'email.max' => 'Het e-mailadres van de medewerker mag maximaal 255 tekens bevatten',
             'email.unique' => 'Dit e-mailadres is al in gebruik',
+            'role.required' => 'Kies een functie voor de medewerker',
+            'role.in' => 'Kies een geldige functie voor de medewerker',
+            'role.max' => 'De functie van de medewerker mag maximaal 50 tekens bevatten',
+            'phone.digits' => 'Het telefoonnummer moet uit 10 cijfers bestaan',
         ];
     }
 }

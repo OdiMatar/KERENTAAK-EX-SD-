@@ -202,6 +202,26 @@ it('valideert dat een telefoonnummer bij toevoegen uit 10 cijfers bestaat', func
         ->assertSessionHasErrors(['phone' => 'Het telefoonnummer moet uit 10 cijfers bestaan']);
 });
 
+it('toont specifieke validatiemeldingen bij ongeldige medewerkergegevens', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $this->actingAs($owner)
+        ->post(route('medewerkers.store'), [
+            'name' => '',
+            'email' => 'geen-emailadres',
+            'role' => 'directeur',
+            'phone' => '06123',
+        ])
+        ->assertSessionHasErrors([
+            'name' => 'Vul de naam van de medewerker in',
+            'email' => 'Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl',
+            'role' => 'Kies een geldige functie voor de medewerker',
+            'phone' => 'Het telefoonnummer moet uit 10 cijfers bestaan',
+        ]);
+});
+
 it('valideert dat een telefoonnummer bij wijzigen uit 10 cijfers bestaat', function () {
     $owner = User::factory()->create([
         'role' => User::ROLE_OWNER,
