@@ -16,16 +16,12 @@ class Medewerker extends Model
     protected $table = 'medewerkers';
 
     protected $fillable = [
-        'name',
         'gebruiker_id',
         'voornaam',
         'achternaam',
         'email',
-        'role',
-        'phone',
         'telefoonnummer',
         'functie',
-        'is_active',
         'is_actief',
     ];
 
@@ -50,27 +46,34 @@ class Medewerker extends Model
     {
         $fullName = trim(($this->voornaam ?? '').' '.($this->achternaam ?? ''));
 
-        return $fullName !== '' ? $fullName : $this->name;
+        return $fullName !== '' ? $fullName : ($this->attributes['name'] ?? '');
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->volledigeNaam();
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->telefoonnummer;
+    }
+
+    public function getRoleAttribute(): string
+    {
+        $functie = strtolower($this->functie ?? '');
+
+        return match ($functie) {
+            'manager' => self::ROLE_MANAGER,
+            'stagiair' => self::ROLE_INTERN,
+            default => self::ROLE_EMPLOYEE,
+        };
     }
 
     protected static function booted(): void
     {
         static::saving(function (Medewerker $medewerker): void {
-            if ($medewerker->name && ($medewerker->isDirty('name') || ! $medewerker->voornaam)) {
-                $medewerker->voornaam = str($medewerker->name)->before(' ')->toString();
-                $achternaam = trim(str($medewerker->name)->after(' ')->toString());
-                $medewerker->achternaam = $achternaam !== '' ? $achternaam : '-';
-            }
-
-            if ($medewerker->isDirty('phone') || (! $medewerker->telefoonnummer && $medewerker->phone)) {
-                $medewerker->telefoonnummer = $medewerker->phone;
-            }
-
-            if (! $medewerker->functie && $medewerker->role) {
-                $medewerker->functie = ucfirst($medewerker->role);
-            }
-
-            $medewerker->is_actief = (bool) $medewerker->is_active;
+            $medewerker->is_actief ??= true;
             $medewerker->datum_aangemaakt ??= now();
             $medewerker->datum_gewijzigd = now();
         });
