@@ -42,7 +42,13 @@
                 <div class="alert alert-danger alert-dismissible auto-dismiss rounded-0 border-0 mb-0" role="alert">
                     <x-ui.container>
                         <div class="d-flex align-items-center justify-content-between gap-3">
-                            <span>Controleer de ingevulde gegevens.</span>
+                            <span>
+                                @if (request()->routeIs('klanten.create', 'klanten.edit'))
+                                    De gegevens van deze klant zijn niet bijgewerkt.
+                                @else
+                                    Controleer de ingevulde gegevens.
+                                @endif
+                            </span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Sluiten"></button>
                         </div>
                     </x-ui.container>

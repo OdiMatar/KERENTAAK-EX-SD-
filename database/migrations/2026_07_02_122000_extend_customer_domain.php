@@ -98,17 +98,17 @@ return new class extends Migration
     {
         $customers = [
             'lisa.tiko@example.com' => [
-                'adres' => 'Kappersstraat 12, Rotterdam',
+                'adres' => 'Kappersstraat 12, 3011 AB Rotterdam',
                 'wens' => 'Altijd dezelfde kapper indien mogelijk',
                 'allergie' => 'Parfumvrije haarproducten',
             ],
             'sanne.bakker@example.com' => [
-                'adres' => 'Salonplein 8, Den Haag',
+                'adres' => 'Salonplein 8, 2511 CD Den Haag',
                 'wens' => 'Rustige plek bij het raam',
                 'allergie' => 'Latex',
             ],
             'mila.jansen@example.com' => [
-                'adres' => 'Kniplaan 3, Utrecht',
+                'adres' => 'Kniplaan 3, 3511 EF Utrecht',
                 'wens' => 'Geen stylinggel',
                 'allergie' => 'Geen bekende allergieen',
             ],

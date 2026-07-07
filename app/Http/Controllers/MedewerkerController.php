@@ -25,12 +25,13 @@ class MedewerkerController extends Controller
         $selectedRole = $request->query('role', '');
 
         $medewerkers = Medewerker::query()
-            ->where('is_active', true)
+            ->where('is_actief', true)
             ->when(
                 $selectedRole !== '' && array_key_exists($selectedRole, $roles),
-                fn ($query) => $query->where('role', $selectedRole)
+                fn ($query) => $query->where('functie', $roles[$selectedRole])
             )
-            ->orderBy('name', 'asc')
+            ->orderBy('voornaam', 'asc')
+            ->orderBy('achternaam', 'asc')
             ->get();
 
         return view('medewerkers.index', compact('medewerkers', 'roles', 'selectedRole'));
@@ -49,7 +50,7 @@ class MedewerkerController extends Controller
     {
         $this->ensureNotCustomer($request);
 
-        $medewerker = Medewerker::create($request->validated());
+        $medewerker = Medewerker::create($this->medewerkerData($request->validated()));
 
         return redirect()
             ->route('medewerkers.index')
@@ -70,7 +71,7 @@ class MedewerkerController extends Controller
     public function update(UpdateMedewerkerRequest $request, Medewerker $medewerker): RedirectResponse
     {
         $this->ensureNotCustomer($request);
-        $medewerker->update($request->validated());
+        $medewerker->update($this->medewerkerData($request->validated()));
 
         return redirect()
             ->route('medewerkers.index')
@@ -94,5 +95,28 @@ class MedewerkerController extends Controller
         $medewerker->delete();
 
         return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
+    }
+
+    /**
+     * @param  array{name: string, email: string, role: string, phone?: string|null}  $data
+     * @return array{name: string, voornaam: string, achternaam: string, email: string, role: string, functie: string, phone: string|null, telefoonnummer: string|null, is_actief: bool}
+     */
+    private function medewerkerData(array $data): array
+    {
+        $name = trim($data['name']);
+        $nameParts = preg_split('/\s+/', $name, 2) ?: [$name];
+        $roles = Medewerker::roles();
+
+        return [
+            'name' => $name,
+            'voornaam' => $nameParts[0],
+            'achternaam' => $nameParts[1] ?? '-',
+            'email' => $data['email'],
+            'role' => $data['role'],
+            'functie' => $roles[$data['role']] ?? $roles[Medewerker::ROLE_EMPLOYEE],
+            'phone' => $data['phone'] ?? null,
+            'telefoonnummer' => $data['phone'] ?? null,
+            'is_actief' => true,
+        ];
     }
 }
