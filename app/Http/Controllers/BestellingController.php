@@ -12,6 +12,10 @@ use Illuminate\View\View;
 
 class BestellingController extends Controller
 {
+    private const BESTELLINGEN_PER_PAGINA = 4;
+
+    private const PRODUCT_CATEGORIEEN = ['shampoo', 'conditioner', 'styling', 'verf', 'overig'];
+
     public function index(): View
     {
         $this->authorizeBestellingBeheer();
@@ -19,7 +23,7 @@ class BestellingController extends Controller
         $bestellingen = Bestelling::query()
             ->where('is_actief', true)
             ->latest('orderdatum')
-            ->paginate(4);
+            ->paginate(self::BESTELLINGEN_PER_PAGINA);
 
         return view('bestellingen.index', ['bestellingen' => $bestellingen]);
     }
@@ -156,7 +160,10 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
-        return view('bestellingen.product-toevoegen', ['bestelling' => $bestelling]);
+        return view('bestellingen.product-toevoegen', [
+            'bestelling' => $bestelling,
+            'categorieen' => self::PRODUCT_CATEGORIEEN,
+        ]);
     }
 
     public function storeProduct(Request $request, Bestelling $bestelling): RedirectResponse
@@ -182,6 +189,7 @@ class BestellingController extends Controller
 
         return view('bestellingen.product-wijzigen', [
             'bestelling' => $bestelling,
+            'categorieen' => self::PRODUCT_CATEGORIEEN,
             'product' => $this->product($product),
         ]);
     }
@@ -194,11 +202,7 @@ class BestellingController extends Controller
         $data = $request->validate($this->productRules($product));
         $oudeProduct = $this->product($product);
 
-        $gewijzigd = collect($data)->contains(
-            fn ($waarde, $veld) => (string) $oudeProduct->{$veld} !== (string) $waarde
-        );
-
-        if (! $gewijzigd) {
+        if (! $this->productIsGewijzigd($oudeProduct, $data)) {
             return back()->withInput()->with('error', 'Er zijn geen wijzigingen opgeslagen, omdat de productgegevens hetzelfde zijn gebleven.');
         }
 
@@ -378,6 +382,16 @@ class BestellingController extends Controller
             ->whereIn('id', $bestellingIds)
             ->get()
             ->each(fn (Bestelling $bestelling) => $bestelling->updateTotaalprijs());
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function productIsGewijzigd(object $product, array $data): bool
+    {
+        return collect($data)->contains(
+            fn ($waarde, $veld) => (string) $product->{$veld} !== (string) $waarde
+        );
     }
 
     private function klanten()

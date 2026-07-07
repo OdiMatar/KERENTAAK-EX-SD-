@@ -17,7 +17,7 @@
                         <label for="categorie" class="form-label fw-medium">Categorie</label>
                         <select id="categorie" name="categorie" class="form-select">
                             <option value="">Kies een categorie</option>
-                            @foreach (['shampoo', 'conditioner', 'styling', 'verf', 'overig'] as $categorie)
+                            @foreach ($categorieen as $categorie)
                                 <option value="{{ $categorie }}" @selected(old('categorie') === $categorie)>{{ ucfirst($categorie) }}</option>
                             @endforeach
                         </select>
