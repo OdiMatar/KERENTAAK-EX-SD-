@@ -22,19 +22,19 @@ BEGIN
         klanten.adres,
         klanten.telefoonnummer,
         klanten.email,
+        klanten.is_actief,
         gebruikers.gebruikersnaam
     FROM klanten
     LEFT JOIN gebruikers
         ON gebruikers.id = klanten.gebruiker_id
-    WHERE klanten.is_actief = 1
-        AND (
+    WHERE (
             v_search IS NULL
             OR v_search = ''
             OR klanten.voornaam LIKE CONCAT('%', v_search, '%')
             OR klanten.achternaam LIKE CONCAT('%', v_search, '%')
             OR CONCAT(klanten.voornaam, ' ', klanten.achternaam) LIKE CONCAT('%', v_search, '%')
         )
-    ORDER BY klanten.voornaam, klanten.achternaam;
+    ORDER BY klanten.achternaam, klanten.voornaam;
 END //
 
 CREATE PROCEDURE sp_create_customer(
@@ -43,6 +43,7 @@ CREATE PROCEDURE sp_create_customer(
     IN p_address VARCHAR(255),
     IN p_phone VARCHAR(20),
     IN p_email VARCHAR(150),
+    IN p_is_active TINYINT(1),
     IN p_wishes VARCHAR(255),
     IN p_allergies VARCHAR(255)
 )
@@ -79,7 +80,7 @@ BEGIN
     END IF;
 
     INSERT INTO klanten (voornaam, achternaam, adres, telefoonnummer, email, is_actief, datum_aangemaakt, datum_gewijzigd)
-    VALUES (TRIM(p_first_name), COALESCE(NULLIF(TRIM(p_last_name), ''), '-'), v_address, TRIM(p_phone), v_email, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    VALUES (TRIM(p_first_name), COALESCE(NULLIF(TRIM(p_last_name), ''), '-'), v_address, TRIM(p_phone), v_email, p_is_active, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
     SET v_customer_id = LAST_INSERT_ID();
 
@@ -113,6 +114,7 @@ CREATE PROCEDURE sp_update_customer(
     IN p_address VARCHAR(255),
     IN p_phone VARCHAR(20),
     IN p_email VARCHAR(150),
+    IN p_is_active TINYINT(1),
     IN p_wishes VARCHAR(255),
     IN p_allergies VARCHAR(255)
 )
@@ -158,6 +160,7 @@ BEGIN
         adres = v_address,
         telefoonnummer = TRIM(p_phone),
         email = v_email,
+        is_actief = p_is_active,
         datum_gewijzigd = CURRENT_TIMESTAMP
     WHERE id = p_customer_id;
 
@@ -197,6 +200,10 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Klant niet gevonden';
     END IF;
 
+    IF EXISTS (SELECT 1 FROM klanten WHERE id = p_customer_id AND is_actief = 1) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Deze klant is nog actief. Zet de klant eerst op inactief voordat je deze verwijdert.';
+    END IF;
+
     IF EXISTS (SELECT 1 FROM afspraken WHERE klant_id = p_customer_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Deze klant kan niet worden verwijderd omdat er afspraken aan gekoppeld zijn';
     END IF;
@@ -229,17 +236,18 @@ BEGIN
     SELECT
         'product' AS type,
         products.naam AS titel,
-        bestellingen.orderdatum AS datum,
+        bestellingen.besteldatum AS datum,
         bestellingen.status AS status,
-        CONCAT(bestelregels.aantal, ' x ', products.categorie) AS extra
+        CONCAT(bestelregels.aantal, ' x ', categories.naam) AS extra
     FROM klanten
     INNER JOIN bestellingen
         ON bestellingen.klant_id = klanten.id
-        OR bestellingen.klant_naam = CONCAT(klanten.voornaam, ' ', klanten.achternaam)
     INNER JOIN bestelregels
         ON bestelregels.bestelling_id = bestellingen.id
     INNER JOIN products
         ON products.id = bestelregels.product_id
+    INNER JOIN categories
+        ON categories.id = products.categorie_id
     WHERE klanten.id = p_customer_id
 
     ORDER BY datum DESC, titel ASC;

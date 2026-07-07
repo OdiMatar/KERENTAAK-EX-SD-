@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use Throwable;
 
@@ -192,7 +193,9 @@ class KlantController extends Controller
     private function klantenVoorOverzicht(string $zoekterm): Collection
     {
         if ($this->gebruiktMysql()) {
-            return collect(DB::select('CALL sp_get_customers(?)', [$zoekterm]));
+            return collect(DB::select('CALL sp_get_customers(?)', [$zoekterm]))
+                ->sortBy(fn ($klant) => strtolower((string) $klant->achternaam).' '.strtolower((string) $klant->voornaam))
+                ->values();
         }
 
         return Klant::query()
@@ -212,10 +215,11 @@ class KlantController extends Controller
                 'klanten.adres',
                 'klanten.telefoonnummer',
                 'klanten.email',
+                'klanten.is_actief',
                 'gebruikers.gebruikersnaam',
             ])
-            ->orderBy('klanten.voornaam')
             ->orderBy('klanten.achternaam')
+            ->orderBy('klanten.voornaam')
             ->get();
     }
 
@@ -225,12 +229,13 @@ class KlantController extends Controller
     private function maakKlant(array $data): int
     {
         if ($this->gebruiktMysql()) {
-            $result = DB::selectOne('CALL sp_create_customer(?, ?, ?, ?, ?, ?, ?)', [
+            $result = DB::selectOne('CALL sp_create_customer(?, ?, ?, ?, ?, ?, ?, ?)', [
                 $data['voornaam'],
                 $data['achternaam'],
                 $data['adres'],
                 $data['telefoonnummer'],
                 $data['email'],
+                $data['is_actief'],
                 $data['wensen'],
                 $data['allergieen'],
             ]);
@@ -250,13 +255,14 @@ class KlantController extends Controller
     private function wijzigKlant(Klant $klant, array $data): void
     {
         if ($this->gebruiktMysql()) {
-            DB::select('CALL sp_update_customer(?, ?, ?, ?, ?, ?, ?, ?)', [
+            DB::select('CALL sp_update_customer(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
                 $klant->id,
                 $data['voornaam'],
                 $data['achternaam'],
                 $data['adres'],
                 $data['telefoonnummer'],
                 $data['email'],
+                $data['is_actief'],
                 $data['wensen'],
                 $data['allergieen'],
             ]);
@@ -270,6 +276,10 @@ class KlantController extends Controller
 
     private function verwijderKlant(Klant $klant): void
     {
+        if ((bool) $klant->is_actief) {
+            throw new \RuntimeException('Deze klant is nog actief. Zet de klant eerst op inactief voordat je deze verwijdert.');
+        }
+
         if ($this->gebruiktMysql()) {
             DB::select('CALL sp_delete_customer(?)', [$klant->id]);
 
@@ -298,6 +308,7 @@ class KlantController extends Controller
             'adres' => $data['adres'],
             'telefoonnummer' => $data['telefoonnummer'] ?? null,
             'email' => $data['email'] ?? null,
+            'is_actief' => (bool) ($data['is_actief'] ?? true),
             'wensen' => $data['wensen'] ?? null,
             'allergieen' => $data['allergieen'] ?? null,
         ];
@@ -315,6 +326,7 @@ class KlantController extends Controller
             'adres' => $data['adres'],
             'telefoonnummer' => $data['telefoonnummer'],
             'email' => $data['email'],
+            'is_actief' => $data['is_actief'],
         ];
     }
 
@@ -329,6 +341,7 @@ class KlantController extends Controller
             'adres' => $klant->adres,
             'telefoonnummer' => $klant->telefoonnummer,
             'email' => $klant->email,
+            'is_actief' => (bool) $klant->is_actief,
             'wensen' => $this->wensenVoorKlant($klant->id, 'wens')->implode(', '),
             'allergieen' => $this->wensenVoorKlant($klant->id, 'allergie')->implode(', '),
         ];
@@ -352,31 +365,52 @@ class KlantController extends Controller
      */
     private function historieVoorKlant(Klant $klant): Collection
     {
-        if ($this->gebruiktMysql()) {
-            return collect(DB::select('CALL sp_get_customer_history(?)', [$klant->id]));
+        $historie = collect();
+
+        if (Schema::hasTable('afspraken') && Schema::hasTable('afspraak_behandeling') && Schema::hasTable('behandelingen') && Schema::hasTable('medewerkers')) {
+            $historie = $historie->merge(
+                DB::table('afspraken')
+                    ->join('afspraak_behandeling', 'afspraak_behandeling.afspraak_id', '=', 'afspraken.id')
+                    ->join('behandelingen', 'behandelingen.id', '=', 'afspraak_behandeling.behandeling_id')
+                    ->join('medewerkers', 'medewerkers.id', '=', 'afspraken.medewerker_id')
+                    ->where('afspraken.klant_id', $klant->id)
+                    ->selectRaw("'behandeling' as type, behandelingen.naam as titel, afspraken.datum as datum, afspraken.status as status, CONCAT(medewerkers.voornaam, ' ', medewerkers.achternaam) as extra")
+                    ->get()
+            );
         }
 
-        $behandelingen = DB::table('afspraken')
-            ->join('afspraak_behandeling', 'afspraak_behandeling.afspraak_id', '=', 'afspraken.id')
-            ->join('behandelingen', 'behandelingen.id', '=', 'afspraak_behandeling.behandeling_id')
-            ->join('medewerkers', 'medewerkers.id', '=', 'afspraken.medewerker_id')
-            ->where('afspraken.klant_id', $klant->id)
-            ->selectRaw("'behandeling' as type, behandelingen.naam as titel, afspraken.datum as datum, afspraken.status as status, CONCAT(medewerkers.voornaam, ' ', medewerkers.achternaam) as extra");
+        if (Schema::hasTable('bestellingen') && Schema::hasTable('bestelregels') && Schema::hasTable('products')) {
+            $datumKolom = Schema::hasColumn('bestellingen', 'besteldatum') ? 'besteldatum' : 'orderdatum';
+            $categorieSelect = "'Product'";
 
-        $producten = DB::table('bestellingen')
-            ->join('bestelregels', 'bestelregels.bestelling_id', '=', 'bestellingen.id')
-            ->join('products', 'products.id', '=', 'bestelregels.product_id')
-            ->where(function ($query) use ($klant): void {
-                $query
-                    ->where('bestellingen.klant_id', $klant->id)
-                    ->orWhere('bestellingen.klant_naam', $klant->naam);
-            })
-            ->selectRaw("'product' as type, products.naam as titel, bestellingen.orderdatum as datum, bestellingen.status as status, CONCAT(bestelregels.aantal, ' x ', products.categorie) as extra");
+            $producten = DB::table('bestellingen')
+                ->join('bestelregels', 'bestelregels.bestelling_id', '=', 'bestellingen.id')
+                ->join('products', 'products.id', '=', 'bestelregels.product_id')
+                ->where(function ($query) use ($klant): void {
+                    $query->where('bestellingen.klant_id', $klant->id);
 
-        return $behandelingen
-            ->unionAll($producten)
-            ->orderByDesc('datum')
-            ->get();
+                    if (Schema::hasColumn('bestellingen', 'klant_naam')) {
+                        $query->orWhere('bestellingen.klant_naam', $klant->naam);
+                    }
+                });
+
+            if (Schema::hasTable('categories') && Schema::hasColumn('products', 'categorie_id')) {
+                $producten->join('categories', 'categories.id', '=', 'products.categorie_id');
+                $categorieSelect = 'categories.naam';
+            } elseif (Schema::hasColumn('products', 'categorie')) {
+                $categorieSelect = 'products.categorie';
+            }
+
+            $historie = $historie->merge(
+                $producten
+                    ->selectRaw("'product' as type, products.naam as titel, bestellingen.{$datumKolom} as datum, bestellingen.status as status, CONCAT(bestelregels.aantal, ' x ', {$categorieSelect}) as extra")
+                    ->get()
+            );
+        }
+
+        return $historie
+            ->sortByDesc('datum')
+            ->values();
     }
 
     /**

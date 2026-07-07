@@ -23,6 +23,14 @@
                             <dd class="col-sm-7">{{ $klant->telefoonnummer }}</dd>
                             <dt class="col-sm-5">E-mailadres</dt>
                             <dd class="col-sm-7">{{ $klant->email }}</dd>
+                            <dt class="col-sm-5">Status</dt>
+                            <dd class="col-sm-7">
+                                @if ($klant->is_actief)
+                                    <span class="badge text-bg-success">Actief</span>
+                                @else
+                                    <span class="badge text-bg-secondary">Inactief</span>
+                                @endif
+                            </dd>
                         </dl>
                     </div>
                 </div>
