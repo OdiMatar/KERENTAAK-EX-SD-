@@ -121,6 +121,29 @@ it('wijzigt naam en telefoon van een medewerker zichtbaar in het overzicht', fun
         ->assertSee('0698765432');
 });
 
+it('toont een melding als er geen medewerkergegevens zijn gewijzigd', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $medewerker = Medewerker::query()->create([
+        'name' => 'Yassin Attiah',
+        'email' => 'yassin-geen-wijziging@example.com',
+        'role' => Medewerker::ROLE_EMPLOYEE,
+        'phone' => '0612345678',
+    ]);
+
+    $this->actingAs($owner)
+        ->put(route('medewerkers.update', $medewerker), [
+            'name' => 'Yassin Attiah',
+            'email' => 'yassin-geen-wijziging@example.com',
+            'role' => Medewerker::ROLE_EMPLOYEE,
+            'phone' => '0612345678',
+        ])
+        ->assertRedirect(route('medewerkers.index'))
+        ->assertSessionHas('status', 'Er zijn geen medewerkergegevens gewijzigd');
+});
+
 it('licht een toegevoegde medewerker uit in het overzicht', function () {
     $owner = User::factory()->create([
         'role' => User::ROLE_OWNER,
