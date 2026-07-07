@@ -17,6 +17,16 @@
         @method($method)
     @endif
 
+    <div class="col-12">
+        <div
+            class="alert alert-danger mb-0 {{ $errors->any() ? '' : 'd-none' }}"
+            role="alert"
+            data-klant-form-alert
+        >
+            De gegevens van deze klant zijn niet bijgewerkt.
+        </div>
+    </div>
+
     <div class="col-md-6">
         <x-ui.input
             label="Naam"
@@ -44,6 +54,8 @@
             label="Adres"
             name="adres"
             value="{{ old('adres', $klant?->adres ?? '') }}"
+            placeholder="Teststraat 1, 1234 AB Utrecht"
+            hint="Vul straatnaam, huisnummer, postcode en stad in."
             :error="$errors->first('adres')"
             data-klant-error="adres"
             required
@@ -59,6 +71,17 @@
             data-klant-error="email"
             required
         />
+    </div>
+
+    <div class="col-md-6">
+        <label for="is_actief" class="form-label fw-medium">Status</label>
+        <select id="is_actief" name="is_actief" class="form-select" required>
+            <option value="1" @selected((string) old('is_actief', (int) ($klant?->is_actief ?? true)) === '1')>Actief</option>
+            <option value="0" @selected((string) old('is_actief', (int) ($klant?->is_actief ?? true)) === '0')>Inactief</option>
+        </select>
+        @if ($errors->first('is_actief'))
+            <div class="form-text text-danger">{{ $errors->first('is_actief') }}</div>
+        @endif
     </div>
 
     <div class="col-md-6">
