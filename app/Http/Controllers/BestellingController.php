@@ -170,12 +170,12 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
-        DB::table('products')->insert([
-            ...$request->validate($this->nieuwProductRules()),
-            'is_actief' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $data = $request->validate($this->nieuwProductRules());
+        $data['is_actief'] = true;
+        $data['created_at'] = now();
+        $data['updated_at'] = now();
+
+        DB::table('products')->insert($data);
 
         return redirect()
             ->route('bestellingen.show', $bestelling->id)
@@ -338,28 +338,31 @@ class BestellingController extends Controller
 
     private function bewaarBestelregel(Bestelling $bestelling, object $product, int $aantal): void
     {
-        $regel = DB::table('bestelregels')
+        $bestaandeRegel = DB::table('bestelregels')
             ->where('bestelling_id', $bestelling->id)
             ->where('product_id', $product->id)
             ->first();
 
-        $nieuwAantal = ((int) ($regel->aantal ?? 0)) + $aantal;
-        $data = [
+        $huidigAantal = $bestaandeRegel ? (int) $bestaandeRegel->aantal : 0;
+        $nieuwAantal = $huidigAantal + $aantal;
+
+        $regelData = [
             'aantal' => $nieuwAantal,
             'prijs_per_stuk' => $product->prijs,
             'subtotaal' => $nieuwAantal * $product->prijs,
         ];
 
-        if ($regel) {
-            DB::table('bestelregels')->where('id', $regel->id)->update($data);
-        } else {
-            DB::table('bestelregels')->insert([
-                ...$data,
-                'bestelling_id' => $bestelling->id,
-                'product_id' => $product->id,
-            ]);
+        if ($bestaandeRegel) {
+            DB::table('bestelregels')->where('id', $bestaandeRegel->id)->update($regelData);
+            $bestelling->updateTotaalprijs();
+
+            return;
         }
 
+        $regelData['bestelling_id'] = $bestelling->id;
+        $regelData['product_id'] = $product->id;
+
+        DB::table('bestelregels')->insert($regelData);
         $bestelling->updateTotaalprijs();
     }
 
@@ -370,18 +373,24 @@ class BestellingController extends Controller
             ->pluck('bestelling_id')
             ->unique();
 
-        DB::table('bestelregels')
+        $bestelregels = DB::table('bestelregels')
             ->where('product_id', $product)
-            ->get()
-            ->each(fn (object $regel) => DB::table('bestelregels')->where('id', $regel->id)->update([
+            ->get();
+
+        foreach ($bestelregels as $regel) {
+            DB::table('bestelregels')->where('id', $regel->id)->update([
                 'prijs_per_stuk' => $prijs,
                 'subtotaal' => $regel->aantal * $prijs,
-            ]));
+            ]);
+        }
 
-        Bestelling::query()
+        $bestellingen = Bestelling::query()
             ->whereIn('id', $bestellingIds)
-            ->get()
-            ->each(fn (Bestelling $bestelling) => $bestelling->updateTotaalprijs());
+            ->get();
+
+        foreach ($bestellingen as $bestelling) {
+            $bestelling->updateTotaalprijs();
+        }
     }
 
     /**
@@ -389,9 +398,15 @@ class BestellingController extends Controller
      */
     private function productIsGewijzigd(object $product, array $data): bool
     {
-        return collect($data)->contains(
-            fn ($waarde, $veld) => (string) $product->{$veld} !== (string) $waarde
-        );
+        foreach ($data as $veld => $nieuweWaarde) {
+            $oudeWaarde = $product->{$veld};
+
+            if ((string) $oudeWaarde !== (string) $nieuweWaarde) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function klanten()
