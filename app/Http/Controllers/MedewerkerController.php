@@ -71,7 +71,19 @@ class MedewerkerController extends Controller
     public function update(UpdateMedewerkerRequest $request, Medewerker $medewerker): RedirectResponse
     {
         $this->ensureNotCustomer($request);
-        $medewerker->update($this->medewerkerData($request->validated()));
+        $data = $this->medewerkerData($request->validated());
+
+        $hasChanges = collect($data)->contains(
+            fn ($value, $field) => (string) ($medewerker->{$field} ?? '') !== (string) ($value ?? '')
+        );
+
+        if (! $hasChanges) {
+            return redirect()
+                ->route('medewerkers.index')
+                ->with('status', 'Er zijn geen medewerkergegevens gewijzigd');
+        }
+
+        $medewerker->update($data);
 
         return redirect()
             ->route('medewerkers.index')
