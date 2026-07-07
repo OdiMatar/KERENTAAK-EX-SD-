@@ -19,7 +19,7 @@ class BestellingController extends Controller
         $bestellingen = Bestelling::query()
             ->where('is_actief', true)
             ->latest('orderdatum')
-            ->get();
+            ->paginate(4);
 
         return view('bestellingen.index', ['bestellingen' => $bestellingen]);
     }
@@ -276,7 +276,6 @@ class BestellingController extends Controller
         return [
             'naam' => ['required', 'string', 'max:150', Rule::unique('products', 'naam')->ignore($productId)],
             'categorie' => ['required', 'string', 'max:100'],
-            'ean_code' => ['required', 'digits:13', Rule::unique('products', 'ean_code')->ignore($productId)],
             'prijs' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'voorraad' => ['required', 'integer', 'min:0'],
             'leverancier' => ['required', 'string', 'max:150'],
