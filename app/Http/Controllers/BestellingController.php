@@ -13,14 +13,19 @@ use Throwable;
 
 class BestellingController extends Controller
 {
+    // Op de overzichtspagina tonen we bewust maar vier bestellingen per pagina.
+    // Dat houdt de tabel compact en sluit aan op de pagination-eis.
     private const BESTELLINGEN_PER_PAGINA = 4;
 
+    // De categorieen staan hier centraal, zodat toevoegen en wijzigen dezelfde opties gebruiken.
     private const PRODUCT_CATEGORIEEN = ['shampoo', 'conditioner', 'styling', 'verf', 'overig'];
 
     public function index(): View
     {
         $this->authorizeBestellingBeheer();
 
+        // Alleen actieve bestellingen worden getoond. Verwijderde bestellingen blijven in de database,
+        // maar verdwijnen uit het normale overzicht.
         $bestellingen = Bestelling::query()
             ->where('is_actief', true)
             ->latest('orderdatum')
@@ -33,6 +38,7 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
+        // Het formulier heeft bestaande klantnamen en actieve producten nodig voor de keuzelijsten.
         return view('bestellingen.create', [
             'klanten' => $this->klanten(),
             'producten' => $this->producten(),
@@ -81,6 +87,7 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
+        // De detailpagina combineert bestellinggegevens met losse bestelregels en productinformatie.
         return view('bestellingen.show', [
             'bestelling' => $bestelling,
             'bestelregels' => $this->bestelregels($bestelling),
@@ -132,6 +139,7 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
+        // Een extra product toevoegen gebruikt dezelfde regels als het eerste product bij aanmaken.
         $data = $request->validate($this->regelRules());
         $product = $this->product((int) $data['product_id']);
 
@@ -147,6 +155,8 @@ class BestellingController extends Controller
     public function updateRegel(Request $request, Bestelling $bestelling, int $bestelregel): RedirectResponse
     {
         $this->authorizeBestellingBeheer();
+        // Eerst controleren we of de regel echt bij deze bestelling hoort.
+        // Zo kan iemand geen regel-id van een andere bestelling meesturen.
         $this->abortAlsRegelNietInBestellingZit($bestelling, $bestelregel);
 
         $data = $request->validate([
@@ -157,10 +167,12 @@ class BestellingController extends Controller
 
         try {
             // Het subtotaal hoort altijd gelijk te blijven aan aantal keer prijs per stuk.
+            // Daarom wordt het subtotaal direct opnieuw berekend wanneer het aantal wijzigt.
             DB::table('bestelregels')->where('id', $bestelregel)->update([
                 'aantal' => (int) $data['aantal'],
                 'subtotaal' => $regel->prijs_per_stuk * (int) $data['aantal'],
             ]);
+            // Daarna wordt ook de totaalprijs van de hele bestelling opnieuw opgebouwd.
             $bestelling->updateTotaalprijs();
         } catch (Throwable) {
             return back()->withInput()->with('error', 'Aantal kon niet worden gewijzigd.');
@@ -173,11 +185,13 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
+        // Als de regel niet meer bestaat of bij een andere bestelling hoort, geven we een duidelijke melding.
         if (! $this->regelZitInBestelling($bestelling, $bestelregel)) {
             return back()->with('error', 'Het product kon niet verwijderd worden, omdat hij al verwijderd was.');
         }
 
         try {
+            // Een bestelregel mag hard verwijderd worden: het is alleen de koppeling tussen bestelling en product.
             DB::table('bestelregels')->where('id', $bestelregel)->delete();
             $bestelling->updateTotaalprijs();
         } catch (Throwable) {
@@ -191,6 +205,7 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
+        // Producten worden vanuit een bestelling aangemaakt, zodat je meteen terug kan naar die bestelling.
         return view('bestellingen.product-toevoegen', [
             'bestelling' => $bestelling,
             'categorieen' => self::PRODUCT_CATEGORIEEN,
@@ -202,7 +217,9 @@ class BestellingController extends Controller
         $this->authorizeBestellingBeheer();
 
         $data = $request->validate($this->nieuwProductRules());
+        // Nieuwe producten zijn meteen beschikbaar voor toekomstige bestellingen.
         $data['is_actief'] = true;
+        // Omdat we hier met de query builder werken, zetten we timestamps handmatig.
         $data['created_at'] = now();
         $data['updated_at'] = now();
 
@@ -220,6 +237,7 @@ class BestellingController extends Controller
     public function editProduct(Bestelling $bestelling, int $product): View
     {
         $this->authorizeBestellingBeheer();
+        // Je mag alleen producten wijzigen die daadwerkelijk in deze bestelling gebruikt worden.
         $this->abortAlsProductNietInBestellingZit($bestelling, $product);
 
         return view('bestellingen.product-wijzigen', [
@@ -232,17 +250,20 @@ class BestellingController extends Controller
     public function updateProduct(Request $request, Bestelling $bestelling, int $product): RedirectResponse
     {
         $this->authorizeBestellingBeheer();
+        // Productbeheer loopt hier via de bestelling, daarom bewaken we de koppeling expliciet.
         $this->abortAlsProductNietInBestellingZit($bestelling, $product);
 
         $data = $request->validate($this->productRules($product));
         $oudeProduct = $this->product($product);
 
+        // Zonder echte wijziging tonen we een foutmelding in plaats van stil opnieuw op te slaan.
         if (! $this->productIsGewijzigd($oudeProduct, $data)) {
             return back()->withInput()->with('error', 'Er zijn geen wijzigingen opgeslagen, omdat de productgegevens hetzelfde zijn gebleven.');
         }
 
         try {
             DB::table('products')->where('id', $product)->update($data);
+            // Een prijswijziging raakt bestaande bestelregels, dus die moeten worden herberekend.
             $this->updateBestelregelsVoorProduct($product, (float) $data['prijs']);
         } catch (Throwable) {
             return back()->withInput()->with('error', 'Product kon niet worden gewijzigd.');
@@ -257,6 +278,7 @@ class BestellingController extends Controller
     {
         $this->authorizeBestellingBeheer();
 
+        // Een product verwijderen mag alleen vanuit een bestelling waarin dat product voorkomt.
         if (! $this->productZitInBestelling($bestelling, $product)) {
             return back()->with('error', 'Het product kon niet verwijderd worden, omdat hij al verwijderd was.');
         }
@@ -268,6 +290,7 @@ class BestellingController extends Controller
         }
 
         try {
+            // Producten worden soft verwijderd uit de voorraad, zodat oude bestelregels leesbaar blijven.
             DB::table('products')->where('id', $product)->update(['is_actief' => false]);
         } catch (Throwable) {
             return back()->with('error', 'Product kon niet worden verwijderd.');
@@ -382,6 +405,7 @@ class BestellingController extends Controller
 
     private function productZitInBestelling(Bestelling $bestelling, int $product): bool
     {
+        // Deze helper controleert de koppeltabel tussen bestellingen en producten.
         return DB::table('bestelregels')
             ->where('bestelling_id', $bestelling->id)
             ->where('product_id', $product)
@@ -390,6 +414,7 @@ class BestellingController extends Controller
 
     private function regelZitInBestelling(Bestelling $bestelling, int $bestelregel): bool
     {
+        // Hiermee bewaken we dat een actie op een regel niet buiten de huidige bestelling valt.
         return DB::table('bestelregels')
             ->where('id', $bestelregel)
             ->where('bestelling_id', $bestelling->id)
@@ -407,6 +432,7 @@ class BestellingController extends Controller
         $huidigAantal = $bestaandeRegel ? (int) $bestaandeRegel->aantal : 0;
         $nieuwAantal = $huidigAantal + $aantal;
 
+        // De regel bewaart de prijs van dat moment. Zo blijft duidelijk met welke prijs is besteld.
         $regelData = [
             'aantal' => $nieuwAantal,
             'prijs_per_stuk' => $product->prijs,
@@ -432,11 +458,13 @@ class BestellingController extends Controller
     private function updateBestelregelsVoorProduct(int $product, float $prijs): void
     {
         // Eerst bewaren we welke bestellingen opnieuw berekend moeten worden.
+        // Dat doen we voor de updates, zodat we geen bestelling missen.
         $bestellingIds = DB::table('bestelregels')
             ->where('product_id', $product)
             ->pluck('bestelling_id')
             ->unique();
 
+        // Daarna halen we alle regels voor dit product op om subtotaal en prijs te verversen.
         $bestelregels = DB::table('bestelregels')
             ->where('product_id', $product)
             ->get();
@@ -500,11 +528,13 @@ class BestellingController extends Controller
 
     private function product(int $product): object
     {
+        // firstOrFail geeft automatisch een 404 als het product niet bestaat.
         return DB::table('products')->where('id', $product)->firstOrFail();
     }
 
     private function bestelregel(int $bestelregel): object
     {
+        // firstOrFail geeft automatisch een 404 als de bestelregel niet bestaat.
         return DB::table('bestelregels')->where('id', $bestelregel)->firstOrFail();
     }
 
