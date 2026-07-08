@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class Medewerker extends Model
@@ -15,6 +17,8 @@ class Medewerker extends Model
     public const ROLE_MANAGER = 'manager';
 
     public const ROLE_EMPLOYEE = 'medewerker';
+
+    public const ROLE_HAIRDRESSER = 'kapper';
 
     public const ROLE_INTERN = 'stagiair';
 
@@ -47,6 +51,7 @@ class Medewerker extends Model
         return [
             self::ROLE_MANAGER => 'Manager',
             self::ROLE_EMPLOYEE => 'Medewerker',
+            self::ROLE_HAIRDRESSER => 'Kapper',
             self::ROLE_INTERN => 'Stagiair',
         ];
     }
@@ -54,6 +59,41 @@ class Medewerker extends Model
     public function afspraken(): HasMany
     {
         return $this->hasMany(Afspraak::class, 'medewerker_id');
+    }
+
+    /**
+     * @return Collection<int, Medewerker>
+     */
+    public static function voorOverzicht(?string $role = null): Collection
+    {
+        $roles = self::roles();
+
+        return self::query()
+            ->leftJoin('gebruikers', 'gebruikers.id', '=', 'medewerkers.gebruiker_id')
+            ->where('medewerkers.is_actief', true)
+            ->when(
+                $role !== null && $role !== '' && array_key_exists($role, $roles),
+                fn ($query) => $query->where('medewerkers.functie', $roles[$role])
+            )
+            ->select([
+                'medewerkers.id',
+                'medewerkers.name',
+                'medewerkers.gebruiker_id',
+                'medewerkers.voornaam',
+                'medewerkers.achternaam',
+                'medewerkers.email',
+                'medewerkers.role',
+                'medewerkers.phone',
+                'medewerkers.telefoonnummer',
+                'medewerkers.functie',
+                'medewerkers.is_active',
+                'medewerkers.is_actief',
+                'gebruikers.gebruikersnaam',
+                DB::raw("CONCAT(medewerkers.voornaam, ' ', medewerkers.achternaam) AS volledige_naam"),
+            ])
+            ->orderBy('medewerkers.voornaam', 'asc')
+            ->orderBy('medewerkers.achternaam', 'asc')
+            ->get();
     }
 
     public function volledigeNaam(): string
@@ -79,6 +119,7 @@ class Medewerker extends Model
 
         return match ($functie) {
             self::ROLE_MANAGER => self::ROLE_MANAGER,
+            self::ROLE_HAIRDRESSER => self::ROLE_HAIRDRESSER,
             self::ROLE_INTERN => self::ROLE_INTERN,
             default => self::ROLE_EMPLOYEE,
         };

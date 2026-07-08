@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreMedewerkerRequest;
 use App\Http\Requests\UpdateMedewerkerRequest;
 use App\Models\Medewerker;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class MedewerkerController extends Controller
 {
@@ -23,16 +26,8 @@ class MedewerkerController extends Controller
         $this->ensureNotCustomer($request);
         $roles = Medewerker::roles();
         $selectedRole = $request->query('role', '');
-
-        $medewerkers = Medewerker::query()
-            ->where('is_actief', true)
-            ->when(
-                $selectedRole !== '' && array_key_exists($selectedRole, $roles),
-                fn ($query) => $query->where('functie', $roles[$selectedRole])
-            )
-            ->orderBy('voornaam', 'asc')
-            ->orderBy('achternaam', 'asc')
-            ->get();
+        $selectedRole = is_string($selectedRole) ? $selectedRole : '';
+        $medewerkers = Medewerker::voorOverzicht($selectedRole);
 
         return view('medewerkers.index', compact('medewerkers', 'roles', 'selectedRole'));
     }
@@ -50,12 +45,22 @@ class MedewerkerController extends Controller
     {
         $this->ensureNotCustomer($request);
 
-        $medewerker = Medewerker::create($this->medewerkerData($request->validated()));
+        try {
+            $medewerker = Medewerker::create($this->medewerkerData($request->validated()));
 
-        return redirect()
-            ->route('medewerkers.index')
-            ->with('status', 'De medewerker is succesvol toegevoegd.')
-            ->with('highlighted_medewerker_id', $medewerker->id);
+            return redirect()
+                ->route('medewerkers.index')
+                ->with('status', 'De medewerker is succesvol toegevoegd.')
+                ->with('highlighted_medewerker_id', $medewerker->id);
+        } catch (QueryException $exception) {
+            return $this->terugMetDatabaseFout($exception, 'Medewerker toevoegen is niet gelukt.');
+        } catch (Throwable $exception) {
+            Log::error('Medewerker toevoegen mislukt.', ['exception' => $exception]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Medewerker toevoegen is niet gelukt.');
+        }
     }
 
     public function edit(Request $request, Medewerker $medewerker): View
@@ -71,40 +76,64 @@ class MedewerkerController extends Controller
     public function update(UpdateMedewerkerRequest $request, Medewerker $medewerker): RedirectResponse
     {
         $this->ensureNotCustomer($request);
-        $data = $this->medewerkerData($request->validated());
+        try {
+            $data = $this->medewerkerData($request->validated());
 
-        $hasChanges = collect($data)->contains(
-            fn ($value, $field) => (string) ($medewerker->{$field} ?? '') !== (string) ($value ?? '')
-        );
+            $hasChanges = collect($data)->contains(
+                fn ($value, $field) => (string) ($medewerker->{$field} ?? '') !== (string) ($value ?? '')
+            );
 
-        if (! $hasChanges) {
+            if (! $hasChanges) {
+                return redirect()
+                    ->route('medewerkers.index')
+                    ->with('status', 'Er zijn geen medewerkergegevens gewijzigd');
+            }
+
+            $medewerker->update($data);
+
             return redirect()
                 ->route('medewerkers.index')
-                ->with('status', 'Er zijn geen medewerkergegevens gewijzigd');
+                ->with('status', 'De medewerker is succesvol gewijzigd.')
+                ->with('highlighted_medewerker_id', $medewerker->id);
+        } catch (QueryException $exception) {
+            return $this->terugMetDatabaseFout($exception, 'Medewerker wijzigen is niet gelukt.');
+        } catch (Throwable $exception) {
+            Log::error('Medewerker wijzigen mislukt.', [
+                'medewerker_id' => $medewerker->id,
+                'exception' => $exception,
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Medewerker wijzigen is niet gelukt.');
         }
-
-        $medewerker->update($data);
-
-        return redirect()
-            ->route('medewerkers.index')
-            ->with('status', 'De medewerker is succesvol gewijzigd.')
-            ->with('highlighted_medewerker_id', $medewerker->id);
     }
 
     public function destroy(Request $request, Medewerker $medewerker): RedirectResponse
     {
         $this->ensureNotCustomer($request);
 
-        if ($medewerker->is_active !== null && ! (bool) $medewerker->is_active) {
-            return redirect()->route('medewerkers.index')->with('status', 'Deze medewerker is al verwijderd');
+        try {
+            if ($medewerker->is_active !== null && ! (bool) $medewerker->is_active) {
+                return redirect()->route('medewerkers.index')->with('status', 'Deze medewerker is al verwijderd');
+            }
+
+            $medewerker->update([
+                'is_active' => false,
+                'is_actief' => false,
+            ]);
+
+            return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
+        } catch (QueryException $exception) {
+            return back()->with('error', $this->databaseFoutmelding($exception) ?? 'Medewerker verwijderen is niet gelukt.');
+        } catch (Throwable $exception) {
+            Log::error('Medewerker verwijderen mislukt.', [
+                'medewerker_id' => $medewerker->id,
+                'exception' => $exception,
+            ]);
+
+            return back()->with('error', 'Medewerker verwijderen is niet gelukt.');
         }
-
-        $medewerker->update([
-            'is_active' => false,
-            'is_actief' => false,
-        ]);
-
-        return redirect()->route('medewerkers.index')->with('status', 'De medewerker is succesvol verwijderd.');
     }
 
     /**
@@ -128,5 +157,17 @@ class MedewerkerController extends Controller
             'telefoonnummer' => $data['phone'] ?? null,
             'is_actief' => true,
         ];
+    }
+
+    private function terugMetDatabaseFout(QueryException $exception, string $fallbackMessage): RedirectResponse
+    {
+        return back()
+            ->withInput()
+            ->with('error', $this->databaseFoutmelding($exception) ?? $fallbackMessage);
+    }
+
+    private function databaseFoutmelding(QueryException $exception): ?string
+    {
+        return $exception->errorInfo[2] ?? null;
     }
 }

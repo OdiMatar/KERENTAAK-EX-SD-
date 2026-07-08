@@ -2,8 +2,8 @@
 
 use App\Models\Medewerker;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -30,6 +30,33 @@ it('shows the employee overview for authenticated users', function () {
         ->assertSee('Mila de Vries')
         ->assertSee('mila@example.com')
         ->assertSee('0612345678');
+});
+
+it('kan een kapper kiezen bij het toevoegen van een medewerker', function () {
+    $owner = User::factory()->create([
+        'role' => User::ROLE_OWNER,
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('medewerkers.create'))
+        ->assertOk()
+        ->assertSee('Kapper');
+
+    $this->actingAs($owner)
+        ->post(route('medewerkers.store'), [
+            'name' => 'Sara Kapper',
+            'email' => 'sara-kapper-medewerker@example.com',
+            'role' => Medewerker::ROLE_HAIRDRESSER,
+            'phone' => '0612345678',
+        ])
+        ->assertRedirect(route('medewerkers.index'))
+        ->assertSessionHas('status', 'De medewerker is succesvol toegevoegd.');
+
+    $this->assertDatabaseHas('medewerkers', [
+        'email' => 'sara-kapper-medewerker@example.com',
+        'role' => Medewerker::ROLE_HAIRDRESSER,
+        'functie' => 'Kapper',
+    ]);
 });
 
 it('toont een specifieke melding als er geen managers bekend zijn', function () {
